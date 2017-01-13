@@ -10,7 +10,6 @@ import java.util.List;
 import org.datavec.api.records.reader.RecordReader;
 import org.datavec.api.records.reader.impl.csv.CSVRecordReader;
 import org.datavec.api.split.FileSplit;
-import org.datavec.api.util.ClassPathResource;
 import org.deeplearning4j.datasets.datavec.RecordReaderDataSetIterator;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
@@ -35,13 +34,13 @@ import edu.lu.uni.util.FileHelper;
 public class FeatureExtractorOfMethodName {
 	
 	private static Logger log = LoggerFactory.getLogger(FeatureExtractorOfMethodName.class);
-//	private static final String DATA_FILE_PATH = "/Standardization/labels/";
-//	private static final String DATA_FILE_PATH = "/WithoutNormalization/labels/";
-	private static final String DATA_FILE_PATH = "/Normalization/labels/";
+	private static final String DATA_FILE_PATH = "outputData/Standardization/labels/";
+//	private static final String DATA_FILE_PATH = "outputData/WithoutNormalization/labels/";
+//	private static final String DATA_FILE_PATH = "/Normalization/labels/";
 	private static final String INTEGER_FEATURE_FILE_PATH = "inputData/unsupervised-learning/labels/";
 	
 	public static void main(String[] args) throws FileNotFoundException, IOException, InterruptedException {
-		List<File> files = FileHelper.getAllFiles("src/main/resources" + DATA_FILE_PATH, ".csv");
+		List<File> files = FileHelper.getAllFiles(DATA_FILE_PATH, ".csv");
 		for (File file : files) {
 			String fileName = file.getName();
 			int sizeOfVector = Integer.parseInt(fileName.substring(fileName.lastIndexOf("=") + 1, fileName.lastIndexOf(".csv")));
@@ -55,14 +54,14 @@ public class FeatureExtractorOfMethodName {
 				batchSize = 4705;
 			} 
 			
-			extracteFeaturesWithCNN(file.getPath(), sizeOfVector, batchSize); 
+			extracteFeaturesWithCNN(file, sizeOfVector, batchSize); 
 //			break;
 		}
 		
 		
 	}
 	
-	private static void extracteFeaturesWithCNN(String fileName, int sizeOfVector, int batchSize) throws FileNotFoundException, IOException, InterruptedException {
+	private static void extracteFeaturesWithCNN(File file, int sizeOfVector, int batchSize) throws FileNotFoundException, IOException, InterruptedException {
 		
 		int nChannels = 1;   // Number of input channels
         int outputNum = sizeOfVector; // The number of possible outcomes
@@ -73,7 +72,7 @@ public class FeatureExtractorOfMethodName {
 
         log.info("Load data....");
         RecordReader trainingDataReader = new CSVRecordReader();
-        trainingDataReader.initialize(new FileSplit(new ClassPathResource(fileName.substring(fileName.indexOf(DATA_FILE_PATH))).getFile()));
+        trainingDataReader.initialize(new FileSplit(file));
         DataSetIterator trainingData = new RecordReaderDataSetIterator(trainingDataReader,batchSize);
         
         /*
@@ -133,20 +132,20 @@ public class FeatureExtractorOfMethodName {
         log.info("****************Example finished********************");
         
         int i = 0;
-        String file = fileName.replace("src/main/resources/", "outputData/CNN/");
+        String fileName = file.getPath().replace("outputData/", "outputData/CNN/").replace(".csv", ".list");
         StringBuilder features = new StringBuilder();
         for(org.deeplearning4j.nn.api.Layer layer : model.getLayers()) {
             if (i == 5) {
                 INDArray input = layer.input();
             	features.append(input);
-            	FileHelper.createFile(new File(file), 
+            	FileHelper.createFile(new File(fileName), 
             			features.toString().replace("[[", "").replaceAll("\\],", "")
             			.replaceAll(" \\[", "").replace("]]", ""));
             }
             i ++;
         }
         
-        addMethodNameToFeatures(file);
+        addMethodNameToFeatures(fileName);
 	}
 
 	private static void addMethodNameToFeatures(String file) throws IOException {
