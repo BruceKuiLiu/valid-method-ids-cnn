@@ -92,6 +92,12 @@ public class DataForStandardization {
 					outputFileName.lastIndexOf(".txt")));
 		}
 		outputFileName = outputFileName.replace(".txt", ".csv");
+		
+		File outputFile = new File(outputFileName);
+		if (outputFile.exists()) {
+			outputFile.delete();
+		}
+		
 		List<String> normalizedResults = readNormalizedResults(normalizedFile);
 		String vectors = FileHelper.readFile(vectorFile);
 		BufferedReader br = new BufferedReader(new StringReader(vectors));

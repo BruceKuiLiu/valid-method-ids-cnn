@@ -38,6 +38,12 @@ public class DataForNormalization {
 
 	public void normalizeVectors(File vectorFile) throws IOException {
 		String outputFileName = vectorFile.toString().replace("/WithoutNormalization/", "/Normalization/");
+		
+		File outputFile = new File(outputFileName);
+		if (outputFile.exists()) {
+			outputFile.delete();
+		}
+		
 		int maxSizeOfVector = 0;
 		double min = 0; 
 		double max = 0;

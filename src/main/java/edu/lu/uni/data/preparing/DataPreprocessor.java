@@ -52,6 +52,12 @@ public class DataPreprocessor {
 					outputFileName.lastIndexOf(".list")));
 		}
 		outputFileName = outputFileName.replace(".list", ".csv");
+		
+		File outputFile = new File(outputFileName);
+		if (outputFile.exists()) {
+			outputFile.delete();
+		}
+		
 		String vectors = FileHelper.readFile(vectorFile);
 		BufferedReader br = new BufferedReader(new StringReader(vectors));
 		String vectorLine = null;

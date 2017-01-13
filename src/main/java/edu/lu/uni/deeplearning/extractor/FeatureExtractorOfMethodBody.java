@@ -35,8 +35,8 @@ import edu.lu.uni.util.FileHelper;
 public class FeatureExtractorOfMethodBody {
 	
 	private static Logger log = LoggerFactory.getLogger(FeatureExtractorOfMethodBody.class);
-//	private static final String DATA_FILE_PATH = "outputData/Standardization/features/";
-	private static final String DATA_FILE_PATH = "outputData/WithoutNormalization/features/";
+	private static final String DATA_FILE_PATH = "outputData/Standardization/features/";
+//	private static final String DATA_FILE_PATH = "outputData/WithoutNormalization/features/";
 //	private static final String DATA_FILE_PATH = "outputData/Normalization/features/";
 	private static final String INTEGER_FEATURE_FILE_PATH = "inputData/unsupervised-learning/features/";
 	
@@ -137,7 +137,7 @@ public class FeatureExtractorOfMethodBody {
         log.info("****************Example finished********************");
         
         int i = 0;
-        String fileName = file.getPath().replace("outputData/", "outputData/CNN/").replace(".csv", ".list");
+        String fileName = file.getPath().replace("outputData/", "outputData/CNN/");
         StringBuilder features = new StringBuilder();
         for(org.deeplearning4j.nn.api.Layer layer : model.getLayers()) {
             if (i == 5) {
@@ -186,7 +186,7 @@ public class FeatureExtractorOfMethodBody {
 			content.append(methodName + "[" + featureLine + "]\n");
 		}
 		
-		FileHelper.createFile(new File(file), content.toString());
+		FileHelper.createFile(new File(file.replace(".csv", ".list")), content.toString());
 	}
 	
 }
