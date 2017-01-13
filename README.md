@@ -41,3 +41,11 @@ Input: src/main/resources/WithoutNormalization/, src/main/resources/src/main/res
 Output: outputData/CNN/
 
 The results of CNN will be used in clustering.
+
+apache$commons-math$feature-ast-node-name-with-node-labelSIZE=82.list
+
+SIZE=82 means the size of feature's vector is 82.
+
+apache$commons-math$feature-ast-node-name-with-node-labelSIZE=82.listMAXSize=9.list
+
+MAXSize=9 means the size of label's vector is 9.
