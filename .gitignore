@@ -11,6 +11,7 @@ target
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/
 src/main/java/edu/lu/uni/knn/
+outputData/
 
 # Package Files #
 *.jar
