@@ -17,7 +17,7 @@ public class DataForStandardization {
 	
 	private static Logger logger = LoggerFactory.getLogger(DataForStandardization.class);
 
-	private static final String INPUT_FILE_PATH = "inputData/unsupervised-learning/";
+	private static final String INPUT_FILE_PATH = "inputData/integer-vectors/";
 	private static final String OUTPUT_FILE_PATH = "outputData/Standardization/";
 	
 	public static void main(String[] args) throws IOException {
@@ -84,13 +84,8 @@ public class DataForStandardization {
 	public void standardizeVectors(File normalizedFile, File vectorFile) throws IOException {
 		String outputFileName = normalizedFile.toString().replace(INPUT_FILE_PATH, OUTPUT_FILE_PATH);
 		int maxSizeOfVector = 0;
-		if (outputFileName.contains("/features/")) {
-			maxSizeOfVector = Integer.parseInt(outputFileName.substring(outputFileName.lastIndexOf("SIZE=") + "SIZE=".length(),
-					outputFileName.lastIndexOf(".txt")));
-		} else {
-			maxSizeOfVector = Integer.parseInt(outputFileName.substring(outputFileName.lastIndexOf("MAXSize=") + "MAXSize=".length(),
-					outputFileName.lastIndexOf(".txt")));
-		}
+		maxSizeOfVector = Integer.parseInt(outputFileName.substring(outputFileName.lastIndexOf("SIZE=") + "SIZE=".length(),
+				outputFileName.lastIndexOf(".txt")));
 		outputFileName = outputFileName.replace(".txt", ".csv");
 		
 		File outputFile = new File(outputFileName);

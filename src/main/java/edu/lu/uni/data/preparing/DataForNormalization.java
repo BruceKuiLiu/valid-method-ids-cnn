@@ -1,13 +1,13 @@
 package edu.lu.uni.data.preparing;
 
-import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.StringReader;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Scanner;
 
 import edu.lu.uni.util.FileHelper;
 
@@ -44,85 +44,68 @@ public class DataForNormalization {
 			outputFile.delete();
 		}
 		
-		int maxSizeOfVector = 0;
 		double min = 0; 
-		double max = 0;
-		if (outputFileName.contains("/features/")) {
-			maxSizeOfVector = Integer.parseInt(outputFileName.substring(outputFileName.lastIndexOf("SIZE=") + "SIZE=".length(),
-					outputFileName.lastIndexOf(".csv")));
-			if (outputFileName.contains("apache$commons-math$feature-ast-node-name-with-node-labelSIZE=82")) {
-				max = 4601;
-			} else if (outputFileName.contains("apache$commons-math$feature-only-ast-node-nameSIZE=82")) {
-				max = 29;
-			} else if (outputFileName.contains("apache$commons-math$feature-raw-tokens-with-operatorsSIZE=84")) {
-				max = 4634;
-			} else if (outputFileName.contains("apache$commons-math$feature-raw-tokens-without-operatorsSIZE=72")) {
-				max = 4580;
-			} else if (outputFileName.contains("apache$commons-math$feature-statement-node-name-with-all-node-labelSIZE=82")) {
-				max = 4600;
-			}
-		} else {
-			maxSizeOfVector = Integer.parseInt(outputFileName.substring(outputFileName.lastIndexOf("MAXSize=") + "MAXSize=".length(),
-					outputFileName.lastIndexOf(".csv")));
-			if (outputFileName.contains("RAW_CAMEL_TOKENIATION/apache$commons-math$feature-ast-node-name-with-node-labelSIZE=82")) {
-				max = 1181;
-			} else if (outputFileName.contains("RAW_CAMEL_TOKENIATION/apache$commons-math$feature-raw-tokens-with-operatorsSIZE=84")) {
-				max = 1179;
-			} else if (outputFileName.contains("RAW_CAMEL_TOKENIATION/apache$commons-math$feature-raw-tokens-without-operatorsSIZE=72")) {
-				max = 1181;
-			} else if (outputFileName.contains("SIMPLIFIED_NLP/apache$commons-math$feature-ast-node-name-with-node-labelSIZE=82")) {
-				max = 491;
-			} else if (outputFileName.contains("SIMPLIFIED_NLP/apache$commons-math$feature-raw-tokens-with-operatorsSIZE=84")) {
-				max = 488;
-			} else if (outputFileName.contains("SIMPLIFIED_NLP/apache$commons-math$feature-raw-tokens-without-operatorsSIZE=72")) {
-				max = 491;
-			} else if (outputFileName.contains("TOKENAZATION_WITH_NLP/apache$commons-math$feature-ast-node-name-with-node-labelSIZE=82")) {
-				max = 1408;
-			} else if (outputFileName.contains("TOKENAZATION_WITH_NLP/apache$commons-math$feature-raw-tokens-with-operatorsSIZE=84")) {
-				max = 1406;
-			} else if (outputFileName.contains("TOKENAZATION_WITH_NLP/apache$commons-math$feature-raw-tokens-without-operatorsSIZE=72")) {
-				max = 1408;
-			} 
-		}
-		String vectors = FileHelper.readFile(vectorFile);
-		BufferedReader br = new BufferedReader(new StringReader(vectors));
-		String vectorLine = null;
+		double max = getMax(vectorFile);
+		
+		FileInputStream fis = new FileInputStream(vectorFile);
+		Scanner scanner = new Scanner(fis);
+		
 		int lines = 0; 
 		StringBuilder content = new StringBuilder();
 		DecimalFormat df = new DecimalFormat("#.##########");
 		
-		while ((vectorLine = br.readLine()) != null) {
-//			int indexOfHarshKey = vectorLine.indexOf("#");
-//			
-//			if (indexOfHarshKey < 0) {
-//				logger.error("The below raw feature is invalid!\n" + vectorLine);
-//				continue;
-//			}
-			
-//			String dataKey = vectorLine.substring(0, indexOfHarshKey + 1);
-//			String dataVector = vectorLine.substring(indexOfHarshKey + 2, vectorLine.length() - 1);
+		while (scanner.hasNextLine()) {
+			String vectorLine = scanner.nextLine();
 			List<String> vector = new ArrayList<>();
 			vector.addAll(Arrays.asList(vectorLine.split(", ")));
 			
-			for (int i = 0; i < maxSizeOfVector; i ++) {
-				if ("0".equals(vector.get(i))) {
-					break;
-				} else {
-					double normalizedValue = (Double.parseDouble(vector.get(i)) - min) / (max - min);
-					vector.set(i, df.format(normalizedValue));
-				}
+			for (int i = 0, size = vector.size(); i < size; i ++) {
+				double normalizedValue = (Double.parseDouble(vector.get(i)) - min) / (max - min);
+				vector.set(i, df.format(normalizedValue));
 			}
 			
 			lines ++;
 			content.append(vector.toString().replace("[", "").replace("]", "") + "\n");
 			if (lines % 1000 == 0) {
 				FileHelper.outputToFile(outputFileName, content);
-				content = new StringBuilder();
+				content.setLength(0);
 			}
 		}
+		
+		scanner.close();
+		fis.close();
+		
 		if (content.length() > 0) {
 			FileHelper.outputToFile(outputFileName, content);
 		}
+	}
+
+	private double getMax(File vectorFile) throws IOException {
+		int max = 0;
+		
+		FileInputStream fis = new FileInputStream(vectorFile);
+		Scanner scanner = new Scanner(fis);
+		
+		while (scanner.hasNextLine()) {
+			String line = scanner.nextLine();
+			List<String> vector = new ArrayList<>();
+			vector.addAll(Arrays.asList(line.split(", ")));
+			
+			for (int i = 0, size = vector.size(); i < size; i ++) {
+				if ("0".equals(vector.get(i))) {
+					break;
+				}
+				int element = Integer.parseInt(vector.get(i));
+				if (max < element) {
+					max = element;
+				}
+			}
+		}
+		
+		scanner.close();
+		fis.close();
+		
+		return max;
 	}
 
 }

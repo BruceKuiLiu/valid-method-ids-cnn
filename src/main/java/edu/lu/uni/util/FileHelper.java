@@ -133,6 +133,29 @@ public class FileHelper {
 			close(writer);
 		}
 	}
+	
+	public static void outputToFile(File file, StringBuilder content) {
+		FileWriter writer = null;
+		BufferedWriter bw = null;
+
+		try {
+			if (!file.getParentFile().exists()) {
+				file.getParentFile().mkdirs();
+			}
+			if (!file.exists()) {
+				file.createNewFile();
+			}
+			writer = new FileWriter(file, true);
+			bw = new BufferedWriter(writer);
+			bw.write(content.toString());
+			bw.flush();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			close(bw);
+			close(writer);
+		}
+	}
 
 	private static void close(FileWriter writer) {
 		try {
