@@ -25,10 +25,17 @@ public class DataForStandardization {
 		
 		/*
 		 * The first step: use R language to standardize vectors.
+		 * Remove the tandem slash at the beginning of line 30, add tandem slash at the beginning of line 39.
 		 */
 //		dp.uprightVectorsInFiles(INPUT_FILE_PATH);
+		
 		/*
-		 * The second step: output the standardized vectors.
+		 * The second step: execute the file 'Standardization.R' in R.
+		 */
+		
+		/*
+		 * The third step: output the standardized vectors.
+		 * Remove the tandem slash at the beginning of line 39, add tandem slash at the beginning of line 30.
 		 */
 		dp.standardizeVectorsInFiles(INPUT_FILE_PATH);
 	}

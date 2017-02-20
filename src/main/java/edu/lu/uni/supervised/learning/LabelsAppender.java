@@ -16,9 +16,9 @@ import edu.lu.uni.util.FileHelper;
 
 public class LabelsAppender {
 	
-//	private static final String DATA_FILE_PATH = "outputData/Standardization/method-body/";
+	private static final String DATA_FILE_PATH = "outputData/Standardization/method-body/";
 //	private static final String DATA_FILE_PATH = "outputData/WithoutNormalization/method-body/";
-	private static final String DATA_FILE_PATH = "outputData/Normalization/method-body/";
+//	private static final String DATA_FILE_PATH = "outputData/Normalization/method-body/";
 	private static final String TRAINING_DATA_PATH = "outputData/supervised-learning/training/";
 	private static final String TESTING_DATA_PATH = "outputData/supervised-learning/testing/";
 	
@@ -29,7 +29,7 @@ public class LabelsAppender {
 		
 		for (File file : files) {
 			String featureFile = file.getName();
-			String labelsFile = "inputData/filter/method_name/SIMPLIFIED_NLP(2)/" + featureFile.substring(0, featureFile.lastIndexOf("SIZE")) + ".list";
+			String labelsFile = "inputData/selected_data/method_name/SIMPLIFIED_NLP(2)/" + featureFile.substring(0, featureFile.lastIndexOf("SIZE")) + ".list";
 			File trainingFile = new File(TRAINING_DATA_PATH + featureFile);
 			File testingFile = new File(TESTING_DATA_PATH + featureFile);
 			if (trainingFile.exists()) trainingFile.delete();
@@ -52,28 +52,40 @@ public class LabelsAppender {
 		Random randomGenerator = new Random();
 		FileInputStream fis = new FileInputStream(featuresFile);
 		Scanner scanner = new Scanner(fis);
+		int numberOfTrainingInstances = 66000;
+		int numberOfTestingInstances = 7000;
 		while (scanner.hasNextLine()) {
 			String features = scanner.nextLine();
-			int random = randomGenerator.nextInt(10000);
+			int random = randomGenerator.nextInt(100);
 			if (labels.get(index) == -1) {
 				index ++;
 				continue;
 			}
-			if (random < 9000) {
-				trainingData.append(features + "," + labels.get(index) + "\n");
-				training ++;
+			if (random < 90) {
+				if (training < numberOfTrainingInstances) {
+					trainingData.append(features + "," + labels.get(index) + "\n");
+					training ++;
+				} else {
+					testingData.append(features + "," + labels.get(index) + "\n");
+					testing ++;
+				}
 			} else {
-				testingData.append(features + "," + labels.get(index) + "\n");
-				testing ++;
+				if (testing < numberOfTestingInstances) {
+					testingData.append(features + "," + labels.get(index) + "\n");
+					testing ++;
+				} else {
+					trainingData.append(features + "," + labels.get(index) + "\n");
+					training ++;
+				}
 			}
 			
 			index ++;
 			
-			if (training % 100 == 0) {
+			if (training % 1000 == 0) {
 				FileHelper.outputToFile(trainingFile, trainingData);
 				trainingData.setLength(0);
 			}
-			if (testing % 50 == 0) {
+			if (testing % 1000 == 0) {
 				FileHelper.outputToFile(testingFile, testingData);
 				testingData.setLength(0);
 			}
@@ -107,29 +119,29 @@ public class LabelsAppender {
 			if (labelArray.length >= location) {
 				key = labelArray[location - 1];
 				
-				if (!"VB".equals(key) // 52356
-						&& !"NN".equals(key) && !"VBZ".equals(key) // 4549, 4537
-						&& !"JJ".equals(key) && !"NNP".equals(key) && !"TO".equals(key)// 2000+
-						&& !"NNS".equals(key) //&& !"IN".equals(key)
-						) {
-					key = "OTHERS";
-				}
-				if ("NNP".equals(key) ||"NNS".equals(key)) {
-					key = "NNP";
-				}
-				if ("JJ".equals(key) ||"TO".equals(key)) {
-					key = "JJ";
-				}
+//				if (!"VB".equals(key) // 52356
+//						&& !"NN".equals(key) && !"VBZ".equals(key) // 4549, 4537
+//						&& !"JJ".equals(key) && !"NNP".equals(key) && !"TO".equals(key)// 2000+
+//						&& !"NNS".equals(key) //&& !"IN".equals(key)
+//						) {
+//					key = "OTHERS";
+//				}
+//				if ("NNP".equals(key) ||"NNS".equals(key)) {
+//					key = "NNP";
+//				}
+//				if ("JJ".equals(key) ||"TO".equals(key)) {
+//					key = "JJ";
+//				}
 			} else {
 				key = "NULL";
 			}
 			if (!map.containsKey(key)) {
-				if ("VB".equals(key) || "OTHERS".equals(key)) {
-					map.put(key, -1);
-				} else {
-					map.put(key, value ++);
-				}
-//				map.put(key, value ++);
+//				if ("VB".equals(key) || "OTHERS".equals(key)) {
+//					map.put(key, -1);
+//				} else {
+//					map.put(key, value ++);
+//				}
+				map.put(key, value ++);
 			}
 			labels.add(map.get(key));
 			

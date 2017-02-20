@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.datavec.api.records.reader.RecordReader;
@@ -24,6 +25,7 @@ import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.weights.WeightInit;
 import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
 import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
 import org.slf4j.Logger;
@@ -34,25 +36,29 @@ import edu.lu.uni.util.FileHelper;
 public class FeatureExtractorOfMethodName {
 	
 	private static Logger log = LoggerFactory.getLogger(FeatureExtractorOfMethodName.class);
-//	private static final String DATA_FILE_PATH = "outputData/Standardization/labels/";
-	private static final String DATA_FILE_PATH = "outputData/WithoutNormalization/labels/";
-//	private static final String DATA_FILE_PATH = "/Normalization/labels/";
-	private static final String INTEGER_FEATURE_FILE_PATH = "inputData/unsupervised-learning/labels/";
+	private static final String DATA_FILE_PATH = "outputData/Standardization/method-name/";
+//	private static final String DATA_FILE_PATH = "outputData/WithoutNormalization/method-name/";
+//	private static final String DATA_FILE_PATH = "outputData/Normalization/method-name/";
+	private static final String INTEGER_FEATURE_FILE_PATH = "inputData/unsupervised-learning/method-name/";
 	
 	public static void main(String[] args) throws FileNotFoundException, IOException, InterruptedException {
 		List<File> files = FileHelper.getAllFiles(DATA_FILE_PATH, ".csv");
 		for (File file : files) {
 			String fileName = file.getName();
 			int sizeOfVector = Integer.parseInt(fileName.substring(fileName.lastIndexOf("=") + 1, fileName.lastIndexOf(".csv")));
-			int batchSize = 0;
-			
-			if (fileName.startsWith("apache$commons-math$feature-ast-node-name-with-node-labelSIZE=82")) {
-				batchSize = 4713;
-			} else if (fileName.startsWith("apache$commons-math$feature-raw-tokens-with-operatorsSIZE=84")) {
-				batchSize = 4702;
-			} else if (fileName.startsWith("apache$commons-math$feature-raw-tokens-without-operatorsSIZE=72")) {
-				batchSize = 4705;
-			} 
+			int batchSize = 1000;
+
+//			if (fileName.contains("feature-ast-node-name-with-node-label")) {
+//				batchSize = 4713;
+//			} else if (fileName.contains("feature-only-ast-node-name")) {
+//				batchSize = 4713;
+//			} else if (fileName.contains("feature-raw-tokens-with-operators")) {
+//				batchSize = 4702;
+//			} else if (fileName.contains("feature-raw-tokens-without-operators")) {
+//				batchSize = 500;
+//			} else if (fileName.contains("feature-statement-node-name-with-all-node-label")) {
+//				batchSize = 500;
+//			}
 			
 			extracteFeaturesWithCNN(file, sizeOfVector, batchSize); 
 //			break;
@@ -69,11 +75,15 @@ public class FeatureExtractorOfMethodName {
         int nEpochs = 1;     // Number of training epochs
         int iterations = 1;  // Number of training iterations
         int seed = 123;      //
+        int sizeOfFeatureVector = 15;
+        if (file.getPath().contains("/TOKENAZATION_WITH_NLP(2)/")) {
+        	sizeOfFeatureVector = 25;
+        }
 
         log.info("Load data....");
         RecordReader trainingDataReader = new CSVRecordReader();
         trainingDataReader.initialize(new FileSplit(file));
-        DataSetIterator trainingData = new RecordReaderDataSetIterator(trainingDataReader,batchSize);
+        DataSetIterator trainingDataIter = new RecordReaderDataSetIterator(trainingDataReader,batchSize);
         
         /*
          *  Construct the neural network
@@ -110,7 +120,7 @@ public class FeatureExtractorOfMethodName {
                         .stride(1,2)
                         .build())
                 .layer(4, new DenseLayer.Builder().activation("relu")
-                        .nOut(10).build())
+                        .nOut(sizeOfFeatureVector).build())
                 .layer(5, new OutputLayer.Builder(LossFunctions.LossFunction.MEAN_ABSOLUTE_ERROR)
                         .nOut(outputNum)
                         .activation("softmax")
@@ -122,33 +132,37 @@ public class FeatureExtractorOfMethodName {
         MultiLayerNetwork model = new MultiLayerNetwork(conf);
         model.init();
 
-
+        StringBuilder features = new StringBuilder();
+        List<Integer> headLine = new ArrayList<>();
+		for (int i = 1; i <= sizeOfFeatureVector; i ++) {
+			headLine.add(i);
+		}
+		features.append(headLine.toString().replace("[", "").replace("]", "") + "\n");
+		
         log.info("Train model....");
         model.setListeners(new ScoreIterationListener(1));
         for( int i=0; i<nEpochs; i++ ) {
-            model.fit(trainingData);
+        	while (trainingDataIter.hasNext()) {
+        		DataSet next = trainingDataIter.next();
+                model.fit(new DataSet(next.getFeatureMatrix(),next.getFeatureMatrix()));
+                INDArray input = model.getOutputLayer().input();
+            	features.append(input + "\n");
+        	}
+//            model.fit(trainingData);
             log.info("*** Completed epoch {} ***", i);
         }
         log.info("****************Example finished********************");
         
-        int i = 0;
         String fileName = file.getPath().replace("outputData/", "outputData/CNN/");
-        StringBuilder features = new StringBuilder();
-        for(org.deeplearning4j.nn.api.Layer layer : model.getLayers()) {
-            if (i == 5) {
-                INDArray input = layer.input();
-            	features.append(input);
-            	FileHelper.createFile(new File(fileName), 
-            			features.toString().replace("[[", "").replaceAll("\\],", "")
-            			.replaceAll(" \\[", "").replace("]]", ""));
-            }
-            i ++;
-        }
+		
+    	FileHelper.createFile(new File(fileName), 
+    			features.toString().replace("[[", "").replaceAll("\\],", "")
+    			.replaceAll(" \\[", "").replace("]]", ""));
         
-        addMethodNameToFeatures(fileName);
+//        addMethodNameToFeatures(fileName);
 	}
 
-	private static void addMethodNameToFeatures(String file) throws IOException {
+	public static void addMethodNameToFeatures(String file) throws IOException {
 		List<File> integerFeatureFiles = FileHelper.getAllFiles(INTEGER_FEATURE_FILE_PATH, ".list");
 		
 		for (File integerFeatureFile : integerFeatureFiles) {

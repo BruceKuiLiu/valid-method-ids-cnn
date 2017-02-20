@@ -1,10 +1,13 @@
 # valid-method-ids-cnn
 
+# Example:
+edu.lu.uni.data.preparing/*.java
+
 ## First, preprocess data for deep learning.
 Package: edu.lu.uni.data.preparing
 
 ### 1. append 0 to all vectors, make all vectors hold the same size.
-JavaFile: DataPreprocessor.java
+JavaFile: ZeroAppender.java
 
 Input: inputData/unsupervised-learning/
 
@@ -42,17 +45,3 @@ Output: outputData/CNN/
 
 The results of CNN will be used in clustering. 
 
-apache$commons-math$feature-ast-node-name-with-node-labelSIZE=82.list
-
-SIZE=82 means the size of feature's vector is 82. 
-The size is selected by computing the value of upper whisker in the boxplot of all sizes' distribution.
-
-apache$commons-math$feature-ast-node-name-with-node-labelSIZE=82.listMAXSize=9.list
-
-MAXSize=9 means the size of label's vector is 9.
-
-### Mapping features with labels
-.csv files can be directly used to cluster. We can use the same line number to map features with labels.
-or use data in the .list files, features and labels hold the same keys.
-
-e.g. key: org.apache.commons.math4.analysis.differentiation:DerivativeStructure:getFreeParameters:null#

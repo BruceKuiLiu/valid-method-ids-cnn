@@ -38,7 +38,7 @@ public class Prediction {
 		String fileName = "projects$feature-statement-node-name-with-all-node-labelSIZE=74.csv";
 		File trainingFile = new File(TRAINING_DATA + fileName);
 		int sizeOfVector = Integer.parseInt(fileName.substring(fileName.lastIndexOf("SIZE=") + "SIZE=".length(), fileName.lastIndexOf(".csv")));
-		predictWithCNN(trainingFile, sizeOfVector, sizeOfVector, 4);
+		predictWithCNN(trainingFile, sizeOfVector, sizeOfVector, 30);
 	}
 	
 	private static void predictWithCNN(File file, int sizeOfVector, int labelIndex, int numClasses) throws FileNotFoundException, IOException, InterruptedException {

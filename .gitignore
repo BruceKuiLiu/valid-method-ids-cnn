@@ -10,8 +10,10 @@ target
 *.pdf
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/
-src/main/java/edu/lu/uni/knn/
+
+inputData/
 outputData/
+
 
 # Package Files #
 *.jar

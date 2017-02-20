@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.datavec.api.records.reader.RecordReader;
@@ -35,29 +36,29 @@ import edu.lu.uni.util.FileHelper;
 public class FeatureExtractorOfMethodBody {
 	
 	private static Logger log = LoggerFactory.getLogger(FeatureExtractorOfMethodBody.class);
-	private static final String DATA_FILE_PATH = "outputData/Standardization/features/";
-//	private static final String DATA_FILE_PATH = "outputData/WithoutNormalization/features/";
-//	private static final String DATA_FILE_PATH = "outputData/Normalization/features/";
-	private static final String INTEGER_FEATURE_FILE_PATH = "inputData/unsupervised-learning/features/";
+//	private static final String DATA_FILE_PATH = "outputData/Standardization/method-body/";
+	private static final String DATA_FILE_PATH = "outputData/WithoutNormalization/method-body/";
+//	private static final String DATA_FILE_PATH = "outputData/Normalization/method-body/";
+	private static final String INTEGER_FEATURE_FILE_PATH = "inputData/unsupervised-learning/method-body/";
 	
 	public static void main(String[] args) throws FileNotFoundException, IOException, InterruptedException {
 		List<File> files = FileHelper.getAllFiles(DATA_FILE_PATH, ".csv");
 		for (File file : files) {
 			String fileName = file.getName();
 			int sizeOfVector = Integer.parseInt(fileName.substring(fileName.lastIndexOf("=") + 1, fileName.lastIndexOf(".csv")));
-			int batchSize = 0;
+			int batchSize = 1000;
 			
-			if (fileName.startsWith("apache$commons-math$feature-ast-node-name-with-node-labelSIZE=82")) {
-				batchSize = 4713;
-			} else if (fileName.startsWith("apache$commons-math$feature-only-ast-node-nameSIZE=82")) {
-				batchSize = 4713;
-			} else if (fileName.startsWith("apache$commons-math$feature-raw-tokens-with-operatorsSIZE=84")) {
-				batchSize = 4702;
-			} else if (fileName.startsWith("apache$commons-math$feature-raw-tokens-without-operatorsSIZE=72")) {
-				batchSize = 4705;
-			} else if (fileName.startsWith("apache$commons-math$feature-statement-node-name-with-all-node-labelSIZE=82")) {
-				batchSize = 4713;
-			}
+//			if (fileName.contains("feature-ast-node-name-with-node-label")) {
+//				batchSize = 4713;
+//			} else if (fileName.contains("feature-only-ast-node-name")) {
+//				batchSize = 4713;
+//			} else if (fileName.contains("feature-raw-tokens-with-operators")) {
+//				batchSize = 4702;
+//			} else if (fileName.contains("feature-raw-tokens-without-operators")) {
+//				batchSize = 500;
+//			} else if (fileName.contains("feature-statement-node-name-with-all-node-label")) {
+//				batchSize = 500;
+//			}
 			
 			extracteFeaturesWithCNN(file, sizeOfVector, batchSize); 
 		}
@@ -71,14 +72,15 @@ public class FeatureExtractorOfMethodBody {
         int outputNum = sizeOfVector; // The number of possible outcomes
         
         int nEpochs = 1;     // Number of training epochs
-        int iterations = 1;  // Number of training iterations
+        int iterations = 1;  // Number of training iterations. 
+        					 // Multiple iterations are generally only used when doing full-batch training on very small data sets.
         int seed = 123;      //
+        int sizeOfFeatureVector = 80;
 
         log.info("Load data....");
         RecordReader trainingDataReader = new CSVRecordReader();
         trainingDataReader.initialize(new FileSplit(file));
-        DataSetIterator trainingDataSet = new RecordReaderDataSetIterator(trainingDataReader,batchSize);
-        DataSet trainingData = trainingDataSet.next();
+        DataSetIterator trainingDataIter = new RecordReaderDataSetIterator(trainingDataReader,batchSize);
         
         /*
          *  Construct the neural network
@@ -88,8 +90,16 @@ public class FeatureExtractorOfMethodBody {
                 .seed(seed)
                 .iterations(iterations) // Training iterations as above
                 .regularization(true).l2(0.0005)
+                /**
+                 * Some simple advice is to start by trying three different learning rates – 1e-1, 1e-3, and 1e-6 
+                 */
                 .learningRate(.01)//.biasLearningRate(0.02)
                 //.learningRateDecayPolicy(LearningRatePolicy.Inverse).lrPolicyDecayRate(0.001).lrPolicyPower(0.75)
+                /**
+                 * XAVIER weight initialization is usually a good choice for this. 
+                 * For networks with rectified linear (relu) or leaky relu activations, 
+                 * RELU weight initialization is a sensible choice.
+                 */
                 .weightInit(WeightInit.XAVIER)
                 .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
                 .updater(Updater.NESTEROVS).momentum(0.9)
@@ -115,7 +125,7 @@ public class FeatureExtractorOfMethodBody {
                         .stride(1,2)
                         .build())
                 .layer(4, new DenseLayer.Builder().activation("relu")
-                        .nOut(80).build())
+                        .nOut(sizeOfFeatureVector).build())
                 .layer(5, new OutputLayer.Builder(LossFunctions.LossFunction.MEAN_ABSOLUTE_ERROR)
                         .nOut(outputNum)
                         .activation("softmax")
@@ -128,32 +138,38 @@ public class FeatureExtractorOfMethodBody {
         model.init();
 
 
+        StringBuilder features = new StringBuilder();
+        List<Integer> headLine = new ArrayList<>();
+		for (int i = 1; i <= sizeOfFeatureVector; i ++) {
+			headLine.add(i);
+		}
+		features.append(headLine.toString().replace("[", "").replace("]", "") + "\n");
+        
         log.info("Train model....");
         model.setListeners(new ScoreIterationListener(1));
         for( int i=0; i<nEpochs; i++ ) {
-            model.fit(trainingData);
+        	while (trainingDataIter.hasNext()) {
+        		DataSet next = trainingDataIter.next();
+                model.fit(new DataSet(next.getFeatureMatrix(),next.getFeatureMatrix()));
+                INDArray input = model.getOutputLayer().input();
+            	features.append(input + "\n");
+        	}
+//            model.fit(trainingData);
+            // During the process of fitting, each training instance is used to calibrate the parameters of neural network.
             log.info("*** Completed epoch {} ***", i);
         }
         log.info("****************Example finished********************");
         
-        int i = 0;
+//        int layerIndex = 0;
         String fileName = file.getPath().replace("outputData/", "outputData/CNN/");
-        StringBuilder features = new StringBuilder();
-        for(org.deeplearning4j.nn.api.Layer layer : model.getLayers()) {
-            if (i == 5) {
-                INDArray input = layer.input();
-            	features.append(input);
-            	FileHelper.createFile(new File(fileName), 
-            			features.toString().replace("[[", "").replaceAll("\\],", "")
-            			.replaceAll(" \\[", "").replace("]]", ""));
-            }
-            i ++;
-        }
+    	FileHelper.createFile(new File(fileName), 
+    			features.toString().replace("[[", "").replaceAll("\\],", "")
+    			.replaceAll(" \\[", "").replace("]]", ""));
         
-        addMethodNameToFeatures(fileName);
+//        addMethodNameToFeatures(fileName);
 	}
 
-	private static void addMethodNameToFeatures(String file) throws IOException {
+	public static void addMethodNameToFeatures(String file) throws IOException {
 		List<File> integerFeatureFiles = FileHelper.getAllFiles(INTEGER_FEATURE_FILE_PATH, ".list");
 		
 		for (File integerFeatureFile : integerFeatureFiles) {
