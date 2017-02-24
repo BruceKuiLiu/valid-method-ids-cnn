@@ -75,7 +75,7 @@ public class FeatureExtractorOfMethodBody {
         int iterations = 1;  // Number of training iterations. 
         					 // Multiple iterations are generally only used when doing full-batch training on very small data sets.
         int seed = 123;      //
-        int sizeOfFeatureVector = 80;
+        int sizeOfFeatureVector = 300;
 
         log.info("Load data....");
         RecordReader trainingDataReader = new CSVRecordReader();
@@ -139,11 +139,6 @@ public class FeatureExtractorOfMethodBody {
 
 
         StringBuilder features = new StringBuilder();
-        List<Integer> headLine = new ArrayList<>();
-		for (int i = 1; i <= sizeOfFeatureVector; i ++) {
-			headLine.add(i);
-		}
-		features.append(headLine.toString().replace("[", "").replace("]", "") + "\n");
         
         log.info("Train model....");
         model.setListeners(new ScoreIterationListener(1));
@@ -164,7 +159,8 @@ public class FeatureExtractorOfMethodBody {
         String fileName = file.getPath().replace("outputData/", "outputData/CNN/");
     	FileHelper.createFile(new File(fileName), 
     			features.toString().replace("[[", "").replaceAll("\\],", "")
-    			.replaceAll(" \\[", "").replace("]]", ""));
+//    			.replaceAll(" \\[", "").replace("]]", ""));
+    			.replaceAll(" \\[", "").replace("]]", "").replace(",", "").replace(" ", ", "));
         
 //        addMethodNameToFeatures(fileName);
 	}
