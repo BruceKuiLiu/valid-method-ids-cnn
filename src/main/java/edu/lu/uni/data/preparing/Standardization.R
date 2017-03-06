@@ -1,17 +1,17 @@
-a <- read.csv("~/Public/git/valid-method-ids-cnn/inputData/integer-vectors/method-body/projects$feature-ast-node-name-with-node-labelSIZE=81.csv")
-write.table(scale(a$TOKEN, center=T,scale=T),"~/Public/git/valid-method-ids-cnn/inputData/integer-vectors/method-body/projects$feature-ast-node-name-with-node-labelSIZE=81.txt",col.names=F,row.names=F)
+a <- read.csv("~/Public/git/valid-method-ids-cnn/OUTPUT/encoding/encoded_method_bodies/feature_combined_ast_node_name_and_raw_tokenSIZE=35.csv")
+write.table(scale(a$TOKEN, center=T,scale=T),"~/Public/git/valid-method-ids-cnn/OUTPUT/encoding/encoded_method_bodies/feature_combined_ast_node_name_and_raw_tokenSIZE=35.txt",col.names=F,row.names=F)
 
-a <- read.csv("~/Public/git/valid-method-ids-cnn/inputData/integer-vectors/method-body/projects$feature-only-ast-node-nameSIZE=81.csv")
-write.table(scale(a$TOKEN, center=T,scale=T),"~/Public/git/valid-method-ids-cnn/inputData/integer-vectors/method-body/projects$feature-only-ast-node-nameSIZE=81.txt",col.names=F,row.names=F)
+a <- read.csv("~/Public/git/valid-method-ids-cnn/OUTPUT/encoding/encoded_method_bodies/feature_only_ast_node_nameSIZE=35.csv")
+write.table(scale(a$TOKEN, center=T,scale=T),"~/Public/git/valid-method-ids-cnn/OUTPUT/encoding/encoded_method_bodies/feature_only_ast_node_nameSIZE=35.txt",col.names=F,row.names=F)
 
-a <- read.csv("~/Public/git/valid-method-ids-cnn/inputData/integer-vectors/method-body/projects$feature-raw-tokens-with-operatorsSIZE=71.csv")
-write.table(scale(a$TOKEN, center=T,scale=T),"~/Public/git/valid-method-ids-cnn/inputData/integer-vectors/method-body/projects$feature-raw-tokens-with-operatorsSIZE=71.txt",col.names=F,row.names=F)
+a <- read.csv("~/Public/git/valid-method-ids-cnn/OUTPUT/encoding/encoded_method_bodies/feature_only_raw_tokenSIZE=31.csv")
+write.table(scale(a$TOKEN, center=T,scale=T),"~/Public/git/valid-method-ids-cnn/OUTPUT/encoding/encoded_method_bodies/feature_only_raw_tokenSIZE=31.txt",col.names=F,row.names=F)
 
-a <- read.csv("~/Public/git/valid-method-ids-cnn/inputData/integer-vectors/method-body/projects$feature-ast-node-name-with-raw-tokenSIZE=142.csv")
-write.table(scale(a$TOKEN, center=T,scale=T),"~/Public/git/valid-method-ids-cnn/inputData/integer-vectors/method-body/projects$feature-ast-node-name-with-raw-tokenSIZE=142.txt",col.names=F,row.names=F)
+a <- read.csv("~/Public/git/valid-method-ids-cnn/OUTPUT/encoding/encoded_method_bodies/feature_seprated_ast_node_name_and_raw_tokenSIZE=62.csv")
+write.table(scale(a$TOKEN, center=T,scale=T),"~/Public/git/valid-method-ids-cnn/OUTPUT/encoding/encoded_method_bodies/feature_seprated_ast_node_name_and_raw_tokenSIZE=62.txt",col.names=F,row.names=F)
 
-a <- read.csv("~/Public/git/valid-method-ids-cnn/inputData/integer-vectors/method-body/projects$feature-statement-node-name-with-all-node-labelSIZE=81.csv")
-write.table(scale(a$TOKEN, center=T,scale=T),"~/Public/git/valid-method-ids-cnn/inputData/integer-vectors/method-body/projects$feature-statement-node-name-with-all-node-labelSIZE=81.txt",col.names=F,row.names=F)
+a <- read.csv("~/Public/git/valid-method-ids-cnn/OUTPUT/encoding/encoded_method_bodies/feature_statement_node_name_with_raw_tokenSIZE=35.csv")
+write.table(scale(a$TOKEN, center=T,scale=T),"~/Public/git/valid-method-ids-cnn/OUTPUT/encoding/encoded_method_bodies/feature_statement_node_name_with_raw_tokenSIZE=35.txt",col.names=F,row.names=F)
 
 a <- read.csv("~/Public/git/valid-method-ids-cnn/inputData/integer-vectors/method-name/RAW_CAMEL_TOKENIATION/projects$feature-ast-node-name-with-node-labelSIZE=12.csv")
 write.table(scale(a$TOKEN, center=T,scale=T),"~/Public/git/valid-method-ids-cnn/inputData/integer-vectors/method-name/RAW_CAMEL_TOKENIATION/projects$feature-ast-node-name-with-node-labelSIZE=12.txt",col.names=F,row.names=F)

@@ -82,11 +82,11 @@ public class LabelsAppender {
 			index ++;
 			
 			if (training % 1000 == 0) {
-				FileHelper.outputToFile(trainingFile, trainingData);
+				FileHelper.outputToFile(trainingFile.getPath(), trainingData, true);
 				trainingData.setLength(0);
 			}
 			if (testing % 1000 == 0) {
-				FileHelper.outputToFile(testingFile, testingData);
+				FileHelper.outputToFile(testingFile.getPath(), testingData, true);
 				testingData.setLength(0);
 			}
 			

@@ -32,54 +32,68 @@ import org.slf4j.LoggerFactory;
 
 import edu.lu.uni.util.FileHelper;
 
-public class FeatureExtractorOfMethodBody {
+public class FeatureExtractor {
 	
-	private static Logger log = LoggerFactory.getLogger(FeatureExtractorOfMethodBody.class);
-//	private static final String DATA_FILE_PATH = "outputData/Standardization/method-body/";
-	private static final String DATA_FILE_PATH = "outputData/WithoutNormalization/method-body/";
-//	private static final String DATA_FILE_PATH = "outputData/Normalization/method-body/";
-	private static final String INTEGER_FEATURE_FILE_PATH = "inputData/unsupervised-learning/method-body/";
+	private static Logger log = LoggerFactory.getLogger(FeatureExtractor.class);
 	
-	public static void main(String[] args) throws FileNotFoundException, IOException, InterruptedException {
-		List<File> files = FileHelper.getAllFiles(DATA_FILE_PATH, ".csv");
-		for (File file : files) {
-			String fileName = file.getName();
-			int sizeOfVector = Integer.parseInt(fileName.substring(fileName.lastIndexOf("=") + 1, fileName.lastIndexOf(".csv")));
-			int batchSize = 1000;
-			
-//			if (fileName.contains("feature-ast-node-name-with-node-label")) {
-//				batchSize = 4713;
-//			} else if (fileName.contains("feature-only-ast-node-name")) {
-//				batchSize = 4713;
-//			} else if (fileName.contains("feature-raw-tokens-with-operators")) {
-//				batchSize = 4702;
-//			} else if (fileName.contains("feature-raw-tokens-without-operators")) {
-//				batchSize = 500;
-//			} else if (fileName.contains("feature-statement-node-name-with-all-node-label")) {
-//				batchSize = 500;
-//			}
-			
-			extracteFeaturesWithCNN(file, sizeOfVector, batchSize); 
-		}
-		
-		
+	private File inputFile;
+	private int sizeOfVector; // The vector size of each instance.
+	private int batchSize;
+	private int sizeOfFeatureVector; // The size of feature vector, which is the extracted features of each instance.
+	
+	private final int nChannels = 1; // Number of input channels, multiple channels are used for multiple-dimensional vectors of data.
+	private final int iterations = 1;// Number of training iterations. 
+	                                 // Multiple iterations are generally only used when doing full-batch training on very small data sets.
+	private int nEpochs = 1;         // Number of training epochs
+	private int seed = 123;
+	
+	private int numOfOutOfLayer1 = 20;
+	private int numOfOutOfLayer2 = 50;
+	
+	private int outputNum; // The number of possible outcomes
+	
+	private String inputPath;
+	private String outputPath;
+	
+	public FeatureExtractor(File inputFile, int sizeOfVector, int batchSize, int sizeOfFeatureVector) {
+		this.inputFile = inputFile;
+		this.sizeOfVector = sizeOfVector;
+		this.batchSize = batchSize;
+		this.sizeOfFeatureVector = sizeOfFeatureVector;
+		/*
+		 * If the deep learning is unsupervised learning, the number of outcomes is the size of input vector.
+		 * If the deep learning is supervised learning, the number of outcomes is the number of classes.
+		 */
+		outputNum = sizeOfVector;
+		inputPath = inputFile.getParent();
+		inputPath = inputPath.substring(0, inputPath.lastIndexOf("/") + 1);
 	}
 	
-	private static void extracteFeaturesWithCNN(File file, int sizeOfVector, int batchSize) throws FileNotFoundException, IOException, InterruptedException {
-		
-		int nChannels = 1;   // Number of input channels
-        int outputNum = sizeOfVector; // The number of possible outcomes
-        
-        int nEpochs = 1;     // Number of training epochs
-        int iterations = 1;  // Number of training iterations. 
-        					 // Multiple iterations are generally only used when doing full-batch training on very small data sets.
-        int seed = 123;      //
-        int sizeOfFeatureVector = 300;
+	public void setNumberOfEpochs(int nEpochs) {
+		this.nEpochs = nEpochs;
+	}
+	
+	public void setSeed(int seed) {
+		this.seed = seed;
+	}
+	
+	public void setNumOfOutOfLayer1(int numOfOutOfLayer1) {
+		this.numOfOutOfLayer1 = numOfOutOfLayer1;
+	}
 
+	public void setNumOfOutOfLayer2(int numOfOutOfLayer2) {
+		this.numOfOutOfLayer2 = numOfOutOfLayer2;
+	}
+
+	public void setOutputPath(String outputPath) {
+		this.outputPath = outputPath;
+	}
+	
+	public void extracteFeaturesWithCNN() throws FileNotFoundException, IOException, InterruptedException {
         log.info("Load data....");
         RecordReader trainingDataReader = new CSVRecordReader();
-        trainingDataReader.initialize(new FileSplit(file));
-        DataSetIterator trainingDataIter = new RecordReaderDataSetIterator(trainingDataReader,batchSize);
+        trainingDataReader.initialize(new FileSplit(inputFile));
+        DataSetIterator trainingDataIter = new RecordReaderDataSetIterator(trainingDataReader, batchSize);
         
         /*
          *  Construct the neural network
@@ -107,7 +121,7 @@ public class FeatureExtractorOfMethodBody {
                         //nIn and nOut specify depth. nIn here is the nChannels and nOut is the number of filters to be applied
                         .nIn(nChannels)
                         .stride(1, 1)
-                        .nOut(20)
+                        .nOut(numOfOutOfLayer1)
                         .activation("identity")
                         .build())
                 .layer(1, new SubsamplingLayer.Builder(SubsamplingLayer.PoolingType.MAX)
@@ -116,7 +130,7 @@ public class FeatureExtractorOfMethodBody {
                         .build())
                 .layer(2, new ConvolutionLayer.Builder(1, 3)
                         .stride(1, 1)
-                        .nOut(50)
+                        .nOut(numOfOutOfLayer2)
                         .activation("identity")
                         .build())
                 .layer(3, new SubsamplingLayer.Builder(SubsamplingLayer.PoolingType.MAX)
@@ -136,7 +150,6 @@ public class FeatureExtractorOfMethodBody {
         MultiLayerNetwork model = new MultiLayerNetwork(conf);
         model.init();
 
-
         StringBuilder features = new StringBuilder();
         
         log.info("Train model....");
@@ -144,28 +157,24 @@ public class FeatureExtractorOfMethodBody {
         for( int i=0; i<nEpochs; i++ ) {
         	while (trainingDataIter.hasNext()) {
         		DataSet next = trainingDataIter.next();
-                model.fit(new DataSet(next.getFeatureMatrix(),next.getFeatureMatrix()));
+        		// During the process of fitting, each training instance is used to calibrate the parameters of neural network.
+                model.fit(next);
+                
                 INDArray input = model.getOutputLayer().input();
-            	features.append(input + "\n");
+            	features.append(input.toString().replace("[[", "").replaceAll("\\],", "")
+            			.replaceAll(" \\[", "").replace("]]", "").replace(",", "").replace(" ", ", ") + "\n");
         	}
-//            model.fit(trainingData);
-            // During the process of fitting, each training instance is used to calibrate the parameters of neural network.
             log.info("*** Completed epoch {} ***", i);
         }
         log.info("****************Example finished********************");
         
-//        int layerIndex = 0;
-        String fileName = file.getPath().replace("outputData/", "outputData/CNN/");
-    	FileHelper.createFile(new File(fileName), 
-    			features.toString().replace("[[", "").replaceAll("\\],", "")
-//    			.replaceAll(" \\[", "").replace("]]", ""));
-    			.replaceAll(" \\[", "").replace("]]", "").replace(",", "").replace(" ", ", "));
-        
-//        addMethodNameToFeatures(fileName);
+        String fileName = inputFile.getPath().replace(inputPath, outputPath);
+    	FileHelper.outputToFile(fileName, features, true);
 	}
 
-	public static void addMethodNameToFeatures(String file) throws IOException {
-		List<File> integerFeatureFiles = FileHelper.getAllFiles(INTEGER_FEATURE_FILE_PATH, ".list");
+	public void addMethodNameToFeatures(String file, String filePath) throws IOException {
+		// filePath = "OUTPUT/encoding/encoded_method_bodies/";
+		List<File> integerFeatureFiles = FileHelper.getAllFiles(filePath, ".list");
 		
 		for (File integerFeatureFile : integerFeatureFiles) {
 			String fileName = integerFeatureFile.getName();
@@ -176,7 +185,7 @@ public class FeatureExtractorOfMethodBody {
 		}
 	}
 
-	private static void addMethodName(String file, File integerFeatureFile) throws IOException {
+	private void addMethodName(String file, File integerFeatureFile) throws IOException {
 		String features = FileHelper.readFile(new File(file));
 		String methodNames = FileHelper.readFile(integerFeatureFile);
 		BufferedReader br1 = new BufferedReader(new StringReader(features));
@@ -197,7 +206,21 @@ public class FeatureExtractorOfMethodBody {
 			content.append(methodName + "[" + featureLine + "]\n");
 		}
 		
-		FileHelper.createFile(new File(file.replace(".csv", ".list")), content.toString());
+		FileHelper.outputToFile(file.replace(".csv", ".list"), content, false);
 	}
-	
+
+	public static void main(String[] args) throws FileNotFoundException, IOException, InterruptedException {
+		String DATA_FILE_PATH = "OUTPUT/data_preprocess/append_zero/";
+		List<File> files = FileHelper.getAllFiles(DATA_FILE_PATH, ".csv");
+		
+		for (File file : files) {
+			String fileName = file.getName();
+			int sizeOfVector = Integer.parseInt(fileName.substring(fileName.lastIndexOf("=") + 1, fileName.lastIndexOf(".csv")));
+			int batchSize = 1000;
+			int sizeOfFeatureVector = 300;
+			
+			FeatureExtractor extractor = new FeatureExtractor(file, sizeOfVector, batchSize, sizeOfFeatureVector);
+			extractor.extracteFeaturesWithCNN(); 
+		}
+	}
 }

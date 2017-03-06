@@ -13,7 +13,7 @@ target
 
 inputData/*
 outputData/
-
+OUTPUT/
 
 # Package Files #
 *.jar

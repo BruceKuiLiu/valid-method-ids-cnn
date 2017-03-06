@@ -13,12 +13,13 @@ import org.slf4j.LoggerFactory;
 
 import edu.lu.uni.util.FileHelper;
 
+@Deprecated
 public class DataForStandardization {
 	
 	private static Logger logger = LoggerFactory.getLogger(DataForStandardization.class);
 
-	private static final String INPUT_FILE_PATH = "inputData/integer-vectors/";
-	private static final String OUTPUT_FILE_PATH = "outputData/Standardization/";
+	private static final String INPUT_FILE_PATH = "OUTPUT/encoding/encoded_method_bodies/";
+	private static final String OUTPUT_FILE_PATH = "OUTPUT/data-preprocess/standardized_data/";
 	
 	public static void main(String[] args) throws IOException {
 		DataForStandardization dp = new DataForStandardization();
@@ -27,7 +28,7 @@ public class DataForStandardization {
 		 * The first step: use R language to standardize vectors.
 		 * Remove the tandem slash at the beginning of line 30, add tandem slash at the beginning of line 39.
 		 */
-//		dp.uprightVectorsInFiles(INPUT_FILE_PATH);
+		dp.uprightVectorsInFiles(INPUT_FILE_PATH);
 		
 		/*
 		 * The second step: execute the file 'Standardization.R' in R.
@@ -37,7 +38,7 @@ public class DataForStandardization {
 		 * The third step: output the standardized vectors.
 		 * Remove the tandem slash at the beginning of line 39, add tandem slash at the beginning of line 30.
 		 */
-		dp.standardizeVectorsInFiles(INPUT_FILE_PATH);
+//		dp.standardizeVectorsInFiles(INPUT_FILE_PATH);
 	}
 	
 	public void uprightVectorsInFiles(String inputFolderPath) throws IOException {
@@ -71,7 +72,7 @@ public class DataForStandardization {
 		}
 		
 		String fileName = file.getName().replace(".list", ".csv");
-		FileHelper.outputToFile(file.getParent() + "/" + fileName, content);
+		FileHelper.outputToFile(file.getParent() + "/" + fileName, content, true);
 	}
 	
 	public void standardizeVectorsInFiles(String inputFolderPath) throws IOException {
@@ -134,12 +135,12 @@ public class DataForStandardization {
 			lines ++;
 			content.append(vector.toString().replace("[", "").replace("]", "") + "\n");
 			if (lines % 1000 == 0) {
-				FileHelper.outputToFile(outputFileName, content);
+				FileHelper.outputToFile(outputFileName, content, true);
 				content = new StringBuilder();
 			}
 		}
 		if (content.length() > 0) {
-			FileHelper.outputToFile(outputFileName, content);
+			FileHelper.outputToFile(outputFileName, content, true);
 		}
 	}
 

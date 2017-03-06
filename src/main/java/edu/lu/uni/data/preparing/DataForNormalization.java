@@ -18,9 +18,10 @@ import edu.lu.uni.util.FileHelper;
  * @author kui.liu
  *
  */
+@Deprecated
 public class DataForNormalization {
 	
-	private static final String INPUT_FILE_PATH = "outputData/WithoutNormalization/";
+	private static final String INPUT_FILE_PATH = "OUTPUT/data_preprocess/append_zero/";
 	
 	public static void main(String[] args) throws IOException {
 		DataForNormalization dp = new DataForNormalization();
@@ -37,7 +38,7 @@ public class DataForNormalization {
 	}
 
 	public void normalizeVectors(File vectorFile) throws IOException {
-		String outputFileName = vectorFile.toString().replace("/WithoutNormalization/", "/Normalization/");
+		String outputFileName = vectorFile.toString().replace("/append_zero/", "/Normalization/");
 		
 		File outputFile = new File(outputFileName);
 		if (outputFile.exists()) {
@@ -67,7 +68,7 @@ public class DataForNormalization {
 			lines ++;
 			content.append(vector.toString().replace("[", "").replace("]", "") + "\n");
 			if (lines % 1000 == 0) {
-				FileHelper.outputToFile(outputFileName, content);
+				FileHelper.outputToFile(outputFileName, content, true);
 				content.setLength(0);
 			}
 		}
@@ -76,7 +77,7 @@ public class DataForNormalization {
 		fis.close();
 		
 		if (content.length() > 0) {
-			FileHelper.outputToFile(outputFileName, content);
+			FileHelper.outputToFile(outputFileName, content, true);
 		}
 	}
 

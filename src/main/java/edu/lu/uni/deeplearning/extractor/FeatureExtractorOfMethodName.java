@@ -33,6 +33,7 @@ import org.slf4j.LoggerFactory;
 
 import edu.lu.uni.util.FileHelper;
 
+@Deprecated
 public class FeatureExtractorOfMethodName {
 	
 	private static Logger log = LoggerFactory.getLogger(FeatureExtractorOfMethodName.class);
@@ -146,7 +147,8 @@ public class FeatureExtractorOfMethodName {
         		DataSet next = trainingDataIter.next();
                 model.fit(new DataSet(next.getFeatureMatrix(),next.getFeatureMatrix()));
                 INDArray input = model.getOutputLayer().input();
-            	features.append(input + "\n");
+            	features.append(input.toString().replace("[[", "").replaceAll("\\],", "")
+            			.replaceAll(" \\[", "").replace("]]", "") + "\n");
         	}
 //            model.fit(trainingData);
             log.info("*** Completed epoch {} ***", i);
@@ -155,9 +157,7 @@ public class FeatureExtractorOfMethodName {
         
         String fileName = file.getPath().replace("outputData/", "outputData/CNN/");
 		
-    	FileHelper.createFile(new File(fileName), 
-    			features.toString().replace("[[", "").replaceAll("\\],", "")
-    			.replaceAll(" \\[", "").replace("]]", ""));
+    	FileHelper.outputToFile(fileName, features, true);
         
 //        addMethodNameToFeatures(fileName);
 	}
@@ -195,7 +195,7 @@ public class FeatureExtractorOfMethodName {
 			content.append(methodName + "[" + featureLine + "]\n");
 		}
 		
-		FileHelper.createFile(new File(file.replace(".csv", ".list")), content.toString());
+		FileHelper.outputToFile(file.replace(".csv", ".list"), content, false);
 	}
 	
 }

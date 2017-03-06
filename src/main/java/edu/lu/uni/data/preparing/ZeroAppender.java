@@ -24,34 +24,29 @@ public class ZeroAppender {
 	
 	private static Logger logger = LoggerFactory.getLogger(ZeroAppender.class);
 
-	private static final String INPUT_FILE_PATH = "inputData/integer-vectors/";
-	private static final String OUTPUT_FILE_PATH = "outputData/WithoutNormalization/";
+	private static final String INPUT_FILE_PATH = "OUTPUT/encoding/encoded_method_bodies/";
+	private static final String OUTPUT_FILE_PATH = "OUTPUT/data_preprocess/append_zero/";
 	
 	public static void main(String[] args) throws IOException {
 		ZeroAppender appender = new ZeroAppender();
 		
-		appender.appendZeroForVectorsInFiles(INPUT_FILE_PATH);
+		appender.appendZeroForVectorsInFiles(INPUT_FILE_PATH, ".list", OUTPUT_FILE_PATH, ".csv");
 	}
 	
-	public void appendZeroForVectorsInFiles(String inputFolderPath) throws IOException {
-		List<File> integerVectorsFiles = FileHelper.getAllFiles(inputFolderPath, ".list");
+	public void appendZeroForVectorsInFiles(String inputFolderPath, String fileExtension, String outputFilePath, String numericFileExtension) throws IOException {
+		List<File> integerVectorsFiles = FileHelper.getAllFiles(inputFolderPath, fileExtension);
 		
 		for (File vectorFile : integerVectorsFiles) {
-			appendZeroForVectors(vectorFile);
+			appendZeroForVectors(vectorFile, inputFolderPath, outputFilePath, fileExtension, numericFileExtension);
 		}
 	}
 
-	public void appendZeroForVectors(File vectorFile) throws IOException {
-		String outputFileName = vectorFile.toString().replace(INPUT_FILE_PATH, OUTPUT_FILE_PATH);
+	public void appendZeroForVectors(File vectorFile, String inputFilePath, String outputFilePath, String tokenFileExtension, String numericFileExtension) throws IOException {
+		String outputFileName = vectorFile.toString().replace(inputFilePath, outputFilePath);
 		int maxSizeOfVector = 0;
 		maxSizeOfVector = Integer.parseInt(outputFileName.substring(outputFileName.lastIndexOf("SIZE=") + "SIZE=".length(),
-				outputFileName.lastIndexOf(".list")));
-		outputFileName = outputFileName.replace(".list", ".csv");
-		
-		File outputFile = new File(outputFileName);
-		if (outputFile.exists()) {
-			outputFile.delete();
-		}
+				outputFileName.lastIndexOf(tokenFileExtension)));
+		outputFileName = outputFileName.replace(tokenFileExtension, numericFileExtension);
 		
 		String vectors = FileHelper.readFile(vectorFile);
 		BufferedReader br = new BufferedReader(new StringReader(vectors));
@@ -67,7 +62,6 @@ public class ZeroAppender {
 				continue;
 			}
 			
-//			String dataKey = vectorLine.substring(0, indexOfHarshKey + 1);
 			String dataVector = vectorLine.substring(indexOfHarshKey + 2, vectorLine.length() - 1);
 			List<String> vector = new ArrayList<>();
 			vector.addAll(Arrays.asList(dataVector.split(", ")));
@@ -80,12 +74,12 @@ public class ZeroAppender {
 			lines ++;
 			content.append(vector.toString().replace("[", "").replace("]", "") + "\n");
 			if (lines % 1000 == 0) {
-				FileHelper.outputToFile(outputFileName, content);
+				FileHelper.outputToFile(outputFileName, content, true);
 				content = new StringBuilder();
 			}
 		}
 		if (content.length() > 0) {
-			FileHelper.outputToFile(outputFileName, content);
+			FileHelper.outputToFile(outputFileName, content, true);
 		}
 	}
 
