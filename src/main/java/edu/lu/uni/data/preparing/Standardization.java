@@ -20,11 +20,11 @@ public class Standardization {
 	
 	private File input;
 	private String outputPath;
-	private List<Long> integers;
+	private List<Integer> integers;
 	private double sum = 0;
 	private double mean;
 	private double s; // standard deviation
-	private Map<Long, Double> standardizedMap;
+	private Map<Integer, Double> standardizedMap;
 	private String tokenFileExtension;
 	private String numericFileExtension;
 
@@ -72,7 +72,7 @@ public class Standardization {
 			
 			int length = vector.length;
 			for (int i = 0; i < length; i ++) {
-				long integerToken = Long.parseLong(vector[i]);
+				int integerToken = Integer.parseInt(vector[i]);
 				standarizedValues.add(standardizedMap.get(integerToken));
 			}
 			for (int i = length; i < maxSizeOfVector; i ++) {
@@ -100,7 +100,7 @@ public class Standardization {
 	private void computeStandardizedValue() {
 		standardizedMap = new HashMap<>();
 		
-		for (long integer : integers) {
+		for (int integer : integers) {
 			if (standardizedMap.containsKey(integer)) {
 				continue;
 			}
@@ -113,7 +113,7 @@ public class Standardization {
 
 	private void computeStandardDeviation() {
 		double deviationSum = 0;
-		for (long integer : integers) {
+		for (int integer : integers) {
 			double deviation = integer - mean;
 			deviationSum += deviation * deviation;
 		}
@@ -136,7 +136,7 @@ public class Standardization {
 			String dataVector = line.substring(indexOfHarshKey + 2, line.length() - 1);
 			String[] vector = dataVector.split(", ");
 			for (int i = 0, length = vector.length; i < length; i ++) {
-				long integerToken = Long.parseLong(vector[i]);
+				int integerToken = Integer.parseInt(vector[i]);
 				integers.add(integerToken);
 				sum += integerToken;
 			}

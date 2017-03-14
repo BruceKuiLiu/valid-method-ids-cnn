@@ -19,29 +19,6 @@ public class FileHelper {
 		return extension;
 	}
 	
-	public static void outputAndCoverFile(File file, String content) {
-		FileWriter writer = null;
-		BufferedWriter bw = null;
-
-		try {
-			if (!file.getParentFile().exists()) {
-				file.getParentFile().mkdirs();
-			}
-			if (!file.exists()) {
-				file.createNewFile();
-			}
-			writer = new FileWriter(file);
-			bw = new BufferedWriter(writer);
-			bw.write(content);
-			bw.flush();
-		} catch (IOException e) {
-			e.printStackTrace();
-		} finally {
-			close(bw);
-			close(writer);
-		}
-	}
-	
 	/**
 	 * 
 	 * @param filePath
