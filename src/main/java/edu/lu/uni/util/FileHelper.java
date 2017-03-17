@@ -12,13 +12,6 @@ import java.util.List;
 
 public class FileHelper {
 
-
-	public static String getFileExtension(File file) {
-		String fileName = file.getName();
-		String extension = fileName.substring(fileName.lastIndexOf("."));
-		return extension;
-	}
-	
 	/**
 	 * 
 	 * @param filePath
@@ -110,6 +103,12 @@ public class FileHelper {
 		}
 	}
 
+	public static String getFileExtension(File file) {
+		String fileName = file.getName();
+		String extension = fileName.substring(fileName.lastIndexOf("."));
+		return extension;
+	}
+	
 	/**
 	 * Check whether a file path is valid or not.
 	 * 
@@ -174,6 +173,14 @@ public class FileHelper {
 		}
 		
 		return fileList;
+	}
+	
+	public static void makeDirectory(String fileName) {
+		deleteFile(fileName);
+		File file = new File(fileName.substring(0, fileName.lastIndexOf("/")));
+		if (!file.exists()) {
+			file.mkdirs();
+		}
 	}
 	
 	/**

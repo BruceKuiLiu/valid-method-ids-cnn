@@ -37,16 +37,17 @@ import edu.lu.uni.util.FileHelper;
  * @author kui.liu
  *
  */
-public class FeatureExtractor {
+public class FeatureExtractor2 {
 	
-	private static Logger log = LoggerFactory.getLogger(FeatureExtractor.class);
+	private static Logger log = LoggerFactory.getLogger(FeatureExtractor2.class);
 	
 	private File inputFile;
-	private int sizeOfVector; // The vector size of each instance.
+    int sizeOfVector = 0;    // The vector size of each instance.
+    int sizeOfCodeVec = 0;   // The vector size of each instance.
 	private int batchSize;
 	private int sizeOfFeatureVector; // The size of feature vector, which is the extracted features of each instance.
 	
-	private final int nChannels = 1; // Number of input channels, multiple channels are used for multiple-dimensional vectors of data.
+	private final int nChannels = 1; // Number of input channels.
 	private final int iterations = 1;// Number of training iterations. 
 	                                 // Multiple iterations are generally only used when doing full-batch training on very small data sets.
 	private int nEpochs = 1;         // Number of training epochs
@@ -60,16 +61,17 @@ public class FeatureExtractor {
 	private String inputPath;
 	private String outputPath;
 	
-	public FeatureExtractor(File inputFile, int sizeOfVector, int batchSize, int sizeOfFeatureVector) {
+	public FeatureExtractor2(File inputFile, int sizeOfVector, int sizeOfCodeVec, int batchSize, int sizeOfFeatureVector) {
 		this.inputFile = inputFile;
 		this.sizeOfVector = sizeOfVector;
+		this.sizeOfCodeVec = sizeOfCodeVec;
 		this.batchSize = batchSize;
 		this.sizeOfFeatureVector = sizeOfFeatureVector;
 		/*
 		 * If the deep learning is unsupervised learning, the number of outcomes is the size of input vector.
 		 * If the deep learning is supervised learning, the number of outcomes is the number of classes.
 		 */
-		outputNum = sizeOfVector;
+		outputNum = sizeOfVector * sizeOfCodeVec;
 		inputPath = inputFile.getParent();
 		inputPath = inputPath.substring(0, inputPath.lastIndexOf("/") + 1);
 	}
@@ -122,7 +124,7 @@ public class FeatureExtractor {
                 .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
                 .updater(Updater.NESTEROVS).momentum(0.9)
                 .list()
-                .layer(0, new ConvolutionLayer.Builder(1, 3)
+                .layer(0, new ConvolutionLayer.Builder(1, sizeOfCodeVec)
                         //nIn and nOut specify depth. nIn here is the nChannels and nOut is the number of filters to be applied
                         .nIn(nChannels)
                         .stride(1, 1)
@@ -130,17 +132,17 @@ public class FeatureExtractor {
                         .activation("identity")
                         .build())
                 .layer(1, new SubsamplingLayer.Builder(SubsamplingLayer.PoolingType.MAX)
-                        .kernelSize(1,2)
-                        .stride(1,2)
+                        .kernelSize(2,1)
+                        .stride(2,1)
                         .build())
-                .layer(2, new ConvolutionLayer.Builder(1, 3)
+                .layer(2, new ConvolutionLayer.Builder(3, 1)
                         .stride(1, 1)
                         .nOut(numOfOutOfLayer2)
                         .activation("identity")
                         .build())
                 .layer(3, new SubsamplingLayer.Builder(SubsamplingLayer.PoolingType.MAX)
-                        .kernelSize(1,2)
-                        .stride(1,2)
+                        .kernelSize(2,1)
+                        .stride(2,1)
                         .build())
                 .layer(4, new DenseLayer.Builder().activation("relu")
                         .nOut(sizeOfFeatureVector).build())
@@ -148,7 +150,7 @@ public class FeatureExtractor {
                         .nOut(outputNum)
                         .activation("softmax")
                         .build())
-                .setInputType(InputType.convolutionalFlat(1,sizeOfVector,1))
+                .setInputType(InputType.convolutionalFlat(sizeOfVector,sizeOfCodeVec,1))
                 .backprop(true).pretrain(false);
 
         MultiLayerConfiguration conf = builder.build();
@@ -168,7 +170,7 @@ public class FeatureExtractor {
                 if (i == nEpochs - 1) {
                 	INDArray input = model.getOutputLayer().input();
                 	features.append(input.toString().replace("[[", "").replaceAll("\\],", "")
-                			.replaceAll(" \\[", "").replace("]]", "").replace(",", "").replace(" ", ", ") + "\n");
+                			.replaceAll(" \\[", "").replace("]]", "") + "\n");
                 }
         	}
             log.info("*** Completed epoch {} ***", i);
@@ -216,18 +218,4 @@ public class FeatureExtractor {
 		FileHelper.outputToFile(file.replace(".csv", ".list"), content, false);
 	}
 
-	public static void main(String[] args) throws FileNotFoundException, IOException, InterruptedException {
-		String DATA_FILE_PATH = "OUTPUT/data_preprocess/append_zero/";
-		List<File> files = FileHelper.getAllFiles(DATA_FILE_PATH, ".csv");
-		
-		for (File file : files) {
-			String fileName = file.getName();
-			int sizeOfVector = Integer.parseInt(fileName.substring(fileName.lastIndexOf("=") + 1, fileName.lastIndexOf(".csv")));
-			int batchSize = 1000;
-			int sizeOfFeatureVector = 300;
-			
-			FeatureExtractor extractor = new FeatureExtractor(file, sizeOfVector, batchSize, sizeOfFeatureVector);
-			extractor.extracteFeaturesWithCNN(); 
-		}
-	}
 }

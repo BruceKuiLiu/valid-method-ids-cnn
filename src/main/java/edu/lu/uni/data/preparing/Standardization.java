@@ -14,6 +14,12 @@ import org.slf4j.LoggerFactory;
 
 import edu.lu.uni.util.FileHelper;
 
+/**
+ * Standardize data.
+ * 
+ * @author kui.liu
+ *
+ */
 public class Standardization {
 	
 	private static Logger logger = LoggerFactory.getLogger(Standardization.class);
