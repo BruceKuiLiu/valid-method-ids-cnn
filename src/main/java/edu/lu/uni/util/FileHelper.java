@@ -92,7 +92,28 @@ public class FileHelper {
 	public static List<File> getAllFiles(String filePath, String type) {
 		return listAllFiles(new File(filePath), type);
 	}
-
+	
+	public static List<File> getAllFilesInCurrentDiectory(String filePath, String type) {
+		List<File> fileList = new ArrayList<>();
+		
+		File directory = new File(filePath);
+		if (!directory.exists()) {
+			return null;
+		}
+		
+		File[] files = directory.listFiles();
+		
+		for (File file : files) {
+			if (file.isFile()) {
+				if (file.toString().endsWith(type)) {
+					fileList.add(file);
+				}
+			} 
+		}
+		
+		return fileList;
+	}
+	
 	public static String getFileName(String filePath) {
 		File file = new File(filePath);
 		
