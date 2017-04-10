@@ -91,7 +91,10 @@ public class FeatureExtractor2 {
 	public void setNumOfOutOfLayer2(int numOfOutOfLayer2) {
 		this.numOfOutOfLayer2 = numOfOutOfLayer2;
 	}
-
+/**
+ * 
+ * @param outputPath
+ */
 	public void setOutputPath(String outputPath) {
 		this.outputPath = outputPath;
 	}
@@ -161,6 +164,9 @@ public class FeatureExtractor2 {
         
         log.info("Train model....");
         model.setListeners(new ScoreIterationListener(1));
+        
+        String fileName = inputFile.getPath().replace(inputPath, outputPath);
+        int batchers = 0;
         for( int i=0; i<nEpochs; i++ ) {
         	while (trainingDataIter.hasNext()) {
         		DataSet next = trainingDataIter.next();
@@ -171,13 +177,18 @@ public class FeatureExtractor2 {
                 	INDArray input = model.getOutputLayer().input();
                 	features.append(input.toString().replace("[[", "").replaceAll("\\],", "")
                 			.replaceAll(" \\[", "").replace("]]", "") + "\n");
+                	
+                	batchers ++;
+                	if ((batchers * batchSize) >= 100000) {
+                		FileHelper.outputToFile(fileName, features, true);
+                		features.setLength(0);
+                	}
                 }
         	}
             log.info("*** Completed epoch {} ***", i);
         }
         log.info("****************Example finished********************");
         
-        String fileName = inputFile.getPath().replace(inputPath, outputPath);
     	FileHelper.outputToFile(fileName, features, true);
 	}
 
