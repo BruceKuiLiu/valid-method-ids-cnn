@@ -187,7 +187,7 @@ public class FeatureExtractor2 {
         	}
             log.info("*** Completed epoch {} ***", i);
         }
-        log.info("****************Example finished********************");
+        log.info("****************Extracting features finished****************");
         
     	FileHelper.outputToFile(fileName, features, true);
 	}
