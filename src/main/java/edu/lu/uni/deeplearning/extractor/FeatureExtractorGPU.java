@@ -182,7 +182,7 @@ public class FeatureExtractorGPU {
         @SuppressWarnings({ "unchecked", "rawtypes" })
 		ParallelWrapper wrapper = new ParallelWrapper.Builder(model)
             // DataSets prefetching options. Set this value with respect to number of actual devices
-            .prefetchBuffer(24)
+            .prefetchBuffer(4)
 
             // set number of workers equal or higher then number of available devices. x1-x2 are good values to start with
             .workers(4)
