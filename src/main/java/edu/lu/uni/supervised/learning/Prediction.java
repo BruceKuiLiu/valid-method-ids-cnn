@@ -21,6 +21,7 @@ import org.deeplearning4j.nn.conf.layers.SubsamplingLayer;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.weights.WeightInit;
 import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
+import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
@@ -78,7 +79,7 @@ public class Prediction {
                         .nIn(nChannels)
                         .stride(1, 1)
                         .nOut(20)
-                        .activation("identity")
+                        .activation(Activation.IDENTITY)
                         .build())
                 .layer(1, new SubsamplingLayer.Builder(SubsamplingLayer.PoolingType.MAX)
                         .kernelSize(1,2)
@@ -87,17 +88,17 @@ public class Prediction {
                 .layer(2, new ConvolutionLayer.Builder(1, 5)
                         .stride(1, 1)
                         .nOut(50)
-                        .activation("identity")
+                        .activation(Activation.IDENTITY)
                         .build())
                 .layer(3, new SubsamplingLayer.Builder(SubsamplingLayer.PoolingType.MAX)
                         .kernelSize(1,2)
                         .stride(1,2)
                         .build())
-                .layer(4, new DenseLayer.Builder().activation("relu")
+                .layer(4, new DenseLayer.Builder().activation(Activation.RELU)
                         .nOut(500).build())
                 .layer(5, new OutputLayer.Builder(LossFunctions.LossFunction.MEAN_ABSOLUTE_ERROR)
                         .nOut(outputNum)
-                        .activation("softmax")
+                        .activation(Activation.SOFTMAX)
                         .build())
                 .setInputType(InputType.convolutionalFlat(1,labelIndex,1))
                 .backprop(true).pretrain(false);

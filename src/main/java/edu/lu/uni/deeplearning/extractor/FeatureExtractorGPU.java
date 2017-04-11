@@ -23,9 +23,12 @@ import org.deeplearning4j.nn.conf.layers.SubsamplingLayer;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.weights.WeightInit;
 import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
+import org.deeplearning4j.parallelism.ParallelWrapper;
+import org.nd4j.jita.conf.CudaEnvironment;
 import org.nd4j.linalg.activations.Activation;
+import org.nd4j.linalg.api.buffer.DataBuffer;
+import org.nd4j.linalg.api.buffer.util.DataTypeUtil;
 import org.nd4j.linalg.api.ndarray.INDArray;
-import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
 import org.slf4j.Logger;
@@ -38,16 +41,17 @@ import edu.lu.uni.util.FileHelper;
  * @author kui.liu
  *
  */
-public class FeatureExtractor {
+public class FeatureExtractorGPU {
 	
-	private static Logger log = LoggerFactory.getLogger(FeatureExtractor.class);
+	private static Logger log = LoggerFactory.getLogger(FeatureExtractorGPU.class);
 	
 	private File inputFile;
-	private int sizeOfVector; // The vector size of each instance.
+    int sizeOfVector = 0;    // The vector size of each instance.
+    int sizeOfCodeVec = 0;   // The vector size of each instance.
 	private int batchSize;
 	private int sizeOfFeatureVector; // The size of feature vector, which is the extracted features of each instance.
 	
-	private final int nChannels = 1; // Number of input channels, multiple channels are used for multiple-dimensional vectors of data.
+	private final int nChannels = 1; // Number of input channels.
 	private final int iterations = 1;// Number of training iterations. 
 	                                 // Multiple iterations are generally only used when doing full-batch training on very small data sets.
 	private int nEpochs = 1;         // Number of training epochs
@@ -61,16 +65,17 @@ public class FeatureExtractor {
 	private String inputPath;
 	private String outputPath;
 	
-	public FeatureExtractor(File inputFile, int sizeOfVector, int batchSize, int sizeOfFeatureVector) {
+	public FeatureExtractorGPU(File inputFile, int sizeOfVector, int sizeOfCodeVec, int batchSize, int sizeOfFeatureVector) {
 		this.inputFile = inputFile;
 		this.sizeOfVector = sizeOfVector;
+		this.sizeOfCodeVec = sizeOfCodeVec;
 		this.batchSize = batchSize;
 		this.sizeOfFeatureVector = sizeOfFeatureVector;
 		/*
 		 * If the deep learning is unsupervised learning, the number of outcomes is the size of input vector.
 		 * If the deep learning is supervised learning, the number of outcomes is the number of classes.
 		 */
-		outputNum = sizeOfVector;
+		outputNum = sizeOfVector * sizeOfCodeVec;
 		inputPath = inputFile.getParent();
 		inputPath = inputPath.substring(0, inputPath.lastIndexOf("/") + 1);
 	}
@@ -90,12 +95,27 @@ public class FeatureExtractor {
 	public void setNumOfOutOfLayer2(int numOfOutOfLayer2) {
 		this.numOfOutOfLayer2 = numOfOutOfLayer2;
 	}
-
+	
 	public void setOutputPath(String outputPath) {
 		this.outputPath = outputPath;
 	}
 	
 	public void extracteFeaturesWithCNN() throws FileNotFoundException, IOException, InterruptedException {
+		// PLEASE NOTE: For CUDA FP16 precision support is available
+        DataTypeUtil.setDTypeForContext(DataBuffer.Type.HALF);
+
+        // temp workaround for backend initialization
+
+        CudaEnvironment.getInstance().getConfiguration()
+            // key option enabled
+            .allowMultiGPU(true)
+
+            // we're allowing larger memory caches
+            .setMaximumDeviceCache(2L * 1024L * 1024L * 1024L)
+
+            // cross-device access is used for faster model averaging over pcie
+            .allowCrossDeviceAccess(true);
+        
         log.info("Load data....");
         RecordReader trainingDataReader = new CSVRecordReader();
         trainingDataReader.initialize(new FileSplit(inputFile));
@@ -123,7 +143,7 @@ public class FeatureExtractor {
                 .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
                 .updater(Updater.NESTEROVS).momentum(0.9)
                 .list()
-                .layer(0, new ConvolutionLayer.Builder(1, 3)
+                .layer(0, new ConvolutionLayer.Builder(1, sizeOfCodeVec)
                         //nIn and nOut specify depth. nIn here is the nChannels and nOut is the number of filters to be applied
                         .nIn(nChannels)
                         .stride(1, 1)
@@ -131,17 +151,17 @@ public class FeatureExtractor {
                         .activation(Activation.IDENTITY)
                         .build())
                 .layer(1, new SubsamplingLayer.Builder(SubsamplingLayer.PoolingType.MAX)
-                        .kernelSize(1,2)
-                        .stride(1,2)
+                        .kernelSize(2,1)
+                        .stride(2,1)
                         .build())
-                .layer(2, new ConvolutionLayer.Builder(1, 3)
+                .layer(2, new ConvolutionLayer.Builder(3, 1)
                         .stride(1, 1)
                         .nOut(numOfOutOfLayer2)
                         .activation(Activation.IDENTITY)
                         .build())
                 .layer(3, new SubsamplingLayer.Builder(SubsamplingLayer.PoolingType.MAX)
-                        .kernelSize(1,2)
-                        .stride(1,2)
+                        .kernelSize(2,1)
+                        .stride(2,1)
                         .build())
                 .layer(4, new DenseLayer.Builder().activation(Activation.RELU)
                         .nOut(sizeOfFeatureVector).build())
@@ -149,34 +169,62 @@ public class FeatureExtractor {
                         .nOut(outputNum)
                         .activation(Activation.SOFTMAX)
                         .build())
-                .setInputType(InputType.convolutionalFlat(1,sizeOfVector,1))
+                .setInputType(InputType.convolutionalFlat(sizeOfVector,sizeOfCodeVec,1))
                 .backprop(true).pretrain(false);
 
         MultiLayerConfiguration conf = builder.build();
         MultiLayerNetwork model = new MultiLayerNetwork(conf);
         model.init();
 
+        
+        
+        // ParallelWrapper will take care of load balancing between GPUs.
+        @SuppressWarnings({ "unchecked", "rawtypes" })
+		ParallelWrapper wrapper = new ParallelWrapper.Builder(model)
+            // DataSets prefetching options. Set this value with respect to number of actual devices
+            .prefetchBuffer(24)
+
+            // set number of workers equal or higher then number of available devices. x1-x2 are good values to start with
+            .workers(4)
+
+            // rare averaging improves performance, but might reduce model accuracy
+            .averagingFrequency(3)
+
+            // if set to TRUE, on every averaging model score will be reported
+            .reportScoreAfterAveraging(true)
+
+            // optinal parameter, set to false ONLY if your system has support P2P memory access across PCIe (hint: AWS do not support P2P)
+            .useLegacyAveraging(true)
+
+            .build();
+        
         StringBuilder features = new StringBuilder();
         
         log.info("Train model....");
         model.setListeners(new ScoreIterationListener(1));
+        
+        String fileName = inputFile.getPath().replace(inputPath, outputPath);
+        int batchers = 0;
         for( int i=0; i<nEpochs; i++ ) {
         	while (trainingDataIter.hasNext()) {
-        		DataSet next = trainingDataIter.next();
-        		// During the process of fitting, each training instance is used to calibrate the parameters of neural network.
-                model.fit(next);
-                
-                if (i == nEpochs - 1) {
+        		// Please note: we're feeding ParallelWrapper with iterator, not model directly
+        		wrapper.fit(trainingDataIter);
+        		if (i == nEpochs - 1) {
                 	INDArray input = model.getOutputLayer().input();
                 	features.append(input.toString().replace("[[", "").replaceAll("\\],", "")
-                			.replaceAll(" \\[", "").replace("]]", "").replace(",", "").replace(" ", ", ") + "\n");
+                			.replaceAll(" \\[", "").replace("]]", "") + "\n");
+                	
+                	batchers ++;
+                	if ((batchers * batchSize) >= 100000) {
+                		FileHelper.outputToFile(fileName, features, true);
+                		features.setLength(0);
+                	}
                 }
         	}
             log.info("*** Completed epoch {} ***", i);
         }
-        log.info("****************Example finished********************");
+        log.info("****************Extracting features finished****************");
         
-        String fileName = inputFile.getPath().replace(inputPath, outputPath);
     	FileHelper.outputToFile(fileName, features, true);
 	}
 
@@ -217,18 +265,4 @@ public class FeatureExtractor {
 		FileHelper.outputToFile(file.replace(".csv", ".list"), content, false);
 	}
 
-	public static void main(String[] args) throws FileNotFoundException, IOException, InterruptedException {
-		String DATA_FILE_PATH = "OUTPUT/data_preprocess/append_zero/";
-		List<File> files = FileHelper.getAllFiles(DATA_FILE_PATH, ".csv");
-		
-		for (File file : files) {
-			String fileName = file.getName();
-			int sizeOfVector = Integer.parseInt(fileName.substring(fileName.lastIndexOf("=") + 1, fileName.lastIndexOf(".csv")));
-			int batchSize = 1000;
-			int sizeOfFeatureVector = 300;
-			
-			FeatureExtractor extractor = new FeatureExtractor(file, sizeOfVector, batchSize, sizeOfFeatureVector);
-			extractor.extracteFeaturesWithCNN(); 
-		}
-	}
 }

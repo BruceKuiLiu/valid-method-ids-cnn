@@ -23,6 +23,7 @@ import org.deeplearning4j.nn.conf.layers.SubsamplingLayer;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.weights.WeightInit;
 import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
+import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
@@ -132,7 +133,7 @@ public class FeatureExtractor2 {
                         .nIn(nChannels)
                         .stride(1, 1)
                         .nOut(numOfOutOfLayer1)
-                        .activation("identity")
+                        .activation(Activation.IDENTITY)
                         .build())
                 .layer(1, new SubsamplingLayer.Builder(SubsamplingLayer.PoolingType.MAX)
                         .kernelSize(2,1)
@@ -141,17 +142,17 @@ public class FeatureExtractor2 {
                 .layer(2, new ConvolutionLayer.Builder(3, 1)
                         .stride(1, 1)
                         .nOut(numOfOutOfLayer2)
-                        .activation("identity")
+                        .activation(Activation.IDENTITY)
                         .build())
                 .layer(3, new SubsamplingLayer.Builder(SubsamplingLayer.PoolingType.MAX)
                         .kernelSize(2,1)
                         .stride(2,1)
                         .build())
-                .layer(4, new DenseLayer.Builder().activation("relu")
+                .layer(4, new DenseLayer.Builder().activation(Activation.RELU)
                         .nOut(sizeOfFeatureVector).build())
                 .layer(5, new OutputLayer.Builder(LossFunctions.LossFunction.MEAN_ABSOLUTE_ERROR)
                         .nOut(outputNum)
-                        .activation("softmax")
+                        .activation(Activation.SOFTMAX)
                         .build())
                 .setInputType(InputType.convolutionalFlat(sizeOfVector,sizeOfCodeVec,1))
                 .backprop(true).pretrain(false);
