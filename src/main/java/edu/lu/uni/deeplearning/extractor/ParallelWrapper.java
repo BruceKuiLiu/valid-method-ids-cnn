@@ -483,6 +483,9 @@ public class ParallelWrapper implements AutoCloseable {
     		counter = 0;
     	}
     	logger.info("***temModel----b");
+    	if (features.length() > 0) {
+    		logger.info("***temModel----c");
+    	}
     }
     
     public static class Builder<T extends Model> {
@@ -808,10 +811,10 @@ public class ParallelWrapper implements AutoCloseable {
                                 ((GridExecutioner) Nd4j.getExecutioner()).flushQueueBlocking();
 
                             running.decrementAndGet();
-                            
+                        
+logger.info("***temModel6=="+ nEpochs_i + "----" + nEpochs);
 if (nEpochs_i == nEpochs - 1) {
 	MultiLayerNetwork temModel = (MultiLayerNetwork) replicatedModel;
-//	logger.info("***temModel6==" + temModel.getOutputLayer().input());
 	logger.info("***temModel6==");
 	exportExtractedFeatures(temModel);
 }
