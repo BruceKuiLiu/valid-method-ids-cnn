@@ -27,7 +27,6 @@ import org.nd4j.jita.conf.CudaEnvironment;
 import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.api.buffer.util.DataTypeUtil;
-import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
 import org.slf4j.Logger;
@@ -237,11 +236,11 @@ public class FeatureExtractorGPU {
             }
             log.info("*** Completed epoch {} ***", i);
         }
-        try {
-			wrapper.close();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+//        try {
+//			wrapper.close();
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
         log.info("****************Extracting features finished****************");
         
     	FileHelper.outputToFile(fileName, features, true);

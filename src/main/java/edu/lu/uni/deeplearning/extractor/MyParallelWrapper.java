@@ -431,6 +431,9 @@ public class MyParallelWrapper implements AutoCloseable {
                         }
 
                         ((MultiLayerNetwork) model).setScore(score);
+                        
+                        MultiLayerNetwork temModel = (MultiLayerNetwork) model;
+                    	log.info("***" + temModel.getOutputLayer().input());
                     } else if (model instanceof ComputationGraph) {
                         averageUpdatersState(locker, score);
                     }
@@ -441,10 +444,10 @@ public class MyParallelWrapper implements AutoCloseable {
                         }
                     }
                     
-                    if (model instanceof MultiLayerNetwork) {
+//                    if (model instanceof MultiLayerNetwork) {
                     	MultiLayerNetwork temModel = (MultiLayerNetwork) model;
                     	log.info("***" + temModel.getOutputLayer().input());
-                    }
+//                    }
                 }
                 locker.set(0);
             }
@@ -475,6 +478,7 @@ public class MyParallelWrapper implements AutoCloseable {
          * @param model
          */
         public Builder(@NonNull T model) {
+        	log.info("*** Model...");
             this.model = model;
         }
 
