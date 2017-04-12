@@ -1,24 +1,34 @@
 package edu.lu.uni;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import edu.lu.uni.data.preparing.Standardization;
 import edu.lu.uni.data.preparing.ZeroAppender;
 import edu.lu.uni.deeplearning.extractor.FeatureExtractor;
+import edu.lu.uni.deeplearning.extractor.FeatureExtractorGPU;
 import edu.lu.uni.util.FileHelper;
 
 public class App {
 
+	private static Logger logger = LoggerFactory.getLogger(App.class);
+	
 	public static void main(String[] args) {
 		App example = new App();
 		try {
-			// data preprocessing
-			example.appendZero();
-			example.standardizeData();
+			logger.info("****************Start to extract features by CNN****************\n");
+//			// data preprocessing
+//			example.appendZero();
+//			example.standardizeData();
 			// feature extracting: deep learning with the CNN algorithm
-			example.extractFeatureWithCNN();
+//			example.extractFeatureWithCNN();
+			example.extractFeaturesOnGPU();
+			logger.info("****************Finish off extracting features by CNN****************\n");
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (InterruptedException e) {
@@ -95,6 +105,33 @@ public class App {
 //			extractor.setNumOfOutOfLayer2(50);
 			
 			extractor.extracteFeaturesWithCNN(); 
+		}
+	}
+	
+	public void extractFeaturesOnGPU() throws FileNotFoundException, IOException, InterruptedException {
+		String fileExtension = Configuration.DIGITAL_DATA_FILE_EXTENSION;
+		List<File> inputFiles = FileHelper.getAllFiles(Configuration.EMBEDDED_DATA_FILE_PATH, fileExtension);
+		
+		String outputPath = Configuration.DATA_EXTRACTED_FEATURE + "embedded_data/";
+		// Clear existing output data generated at the last time.
+		FileHelper.deleteDirectory(outputPath);
+		
+		for (File inputFile : inputFiles) {
+			String fileName = inputFile.getName();
+			int sizeOfEmbeddedVector = Configuration.SIZE_OF_EMBEDDED_VECTOR;
+			int sizeOfTokensVector = Integer.parseInt(fileName.substring(fileName.lastIndexOf("=") + 1, fileName.lastIndexOf(fileExtension)));
+			int batchSize = Configuration.BATCH_SIZE;
+			int sizeOfFeatureVector = Configuration.SIZE_OF_FEATURE_VECTOR;  // size of vectors of extracted features.
+			
+			FeatureExtractorGPU extractor = new FeatureExtractorGPU(inputFile, sizeOfTokensVector, sizeOfEmbeddedVector, batchSize, sizeOfFeatureVector);
+			extractor.setOutputPath(outputPath);
+			// TODO tune the parameters below.
+//			extractor.setNumberOfEpochs(1);
+//			extractor.setSeed(123);
+//			extractor.setNumOfOutOfLayer1(20);
+//			extractor.setNumOfOutOfLayer2(50);
+			
+			extractor.extracteFeaturesWithCNN();
 		}
 	}
 
