@@ -440,6 +440,11 @@ public class MyParallelWrapper implements AutoCloseable {
                             zoo[cnt].updateModel(model);
                         }
                     }
+                    
+                    if (model instanceof MultiLayerNetwork) {
+                    	MultiLayerNetwork temModel = (MultiLayerNetwork) model;
+                    	log.info("***" + temModel.getOutputLayer().input());
+                    }
                 }
                 locker.set(0);
             }

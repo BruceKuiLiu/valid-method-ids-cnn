@@ -23,7 +23,6 @@ import org.deeplearning4j.nn.conf.layers.SubsamplingLayer;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.weights.WeightInit;
 import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
-import org.deeplearning4j.parallelism.ParallelWrapper;
 import org.nd4j.jita.conf.CudaEnvironment;
 import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.api.buffer.DataBuffer;
@@ -225,16 +224,16 @@ public class FeatureExtractorGPU {
     		wrapper.fit(trainingDataIter);
     		
     		if (i == nEpochs - 1) {
-    			MultiLayerNetwork mo = (MultiLayerNetwork) wrapper.model;
-            	INDArray input = mo.getOutputLayer().input();
-            	features.append(input.toString().replace("[[", "").replaceAll("\\],", "")
-            			.replaceAll(" \\[", "").replace("]]", "") + "\n");
-            	
-            	batchers ++;
-            	if ((batchers * batchSize) >= 100000) {
-            		FileHelper.outputToFile(fileName, features, true);
-            		features.setLength(0);
-            	}
+//    			MultiLayerNetwork mo = (MultiLayerNetwork) wrapper.model;
+//            	INDArray input = mo.getOutputLayer().input();
+//            	features.append(input.toString().replace("[[", "").replaceAll("\\],", "")
+//            			.replaceAll(" \\[", "").replace("]]", "") + "\n");
+//            	
+//            	batchers ++;
+//            	if ((batchers * batchSize) >= 100000) {
+//            		FileHelper.outputToFile(fileName, features, true);
+//            		features.setLength(0);
+//            	}
             }
             log.info("*** Completed epoch {} ***", i);
         }
