@@ -475,12 +475,14 @@ public class ParallelWrapper implements AutoCloseable {
     	features.append(input.toString().replace("[[", "").replaceAll("\\],", "")
     			.replaceAll(" \\[", "").replace("]]", "") + "\n");
     	counter += batchSize_;
+    	logger.info("***temModel----a");
     	if (counter >= 10000) {
     		logger.info("***export features");
     		FileHelper.outputToFile(fileName, features, true);
     		features.setLength(0);
     		counter = 0;
     	}
+    	logger.info("***temModel----b");
     }
     
     public static class Builder<T extends Model> {
