@@ -398,6 +398,21 @@ public class ParallelWrapper implements AutoCloseable {
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
+                    
+                    features.append(zoo[cnt].features);
+            		logger.info("***export features" + zoo[cnt].features);
+                    counter += batchSize_;
+                	logger.info("***temModel----a");
+                	if (counter >= 10000) {
+                		logger.info("***export features");
+                		FileHelper.outputToFile(fileName, features, true);
+                		features.setLength(0);
+                		counter = 0;
+                	}
+                	logger.info("***temModel----b");
+                	if (features.length() > 0) {
+                		logger.info("***temModel----c");
+                	}
                 }
 
                 Nd4j.getMemoryManager().invokeGcOccasionally();
@@ -455,6 +470,8 @@ public class ParallelWrapper implements AutoCloseable {
                 }
                 locker.set(0);
             }
+            
+            
         }// end of while
 
         // sanity checks, or the dataset may never average
@@ -469,24 +486,24 @@ public class ParallelWrapper implements AutoCloseable {
     private int counter = 0;
     public StringBuilder features = new StringBuilder();
     private String fileName = "";
-    public synchronized void exportExtractedFeatures(MultiLayerNetwork temModel) {
-//    	temModel.getLabels();
-    	INDArray input = temModel.getOutputLayer().input();
-    	features.append(input.toString().replace("[[", "").replaceAll("\\],", "")
-    			.replaceAll(" \\[", "").replace("]]", "") + "\n");
-    	counter += batchSize_;
-    	logger.info("***temModel----a");
-    	if (counter >= 10000) {
-    		logger.info("***export features");
-    		FileHelper.outputToFile(fileName, features, true);
-    		features.setLength(0);
-    		counter = 0;
-    	}
-    	logger.info("***temModel----b");
-    	if (features.length() > 0) {
-    		logger.info("***temModel----c");
-    	}
-    }
+//    public synchronized void exportExtractedFeatures(MultiLayerNetwork temModel) {
+////    	temModel.getLabels();
+//    	INDArray input = temModel.getOutputLayer().input();
+//    	features.append(input.toString().replace("[[", "").replaceAll("\\],", "")
+//    			.replaceAll(" \\[", "").replace("]]", "") + "\n");
+//    	counter += batchSize_;
+//    	logger.info("***temModel----a");
+//    	if (counter >= 10000) {
+//    		logger.info("***export features");
+//    		FileHelper.outputToFile(fileName, features, true);
+//    		features.setLength(0);
+//    		counter = 0;
+//    	}
+//    	logger.info("***temModel----b");
+//    	if (features.length() > 0) {
+//    		logger.info("***temModel----c");
+//    	}
+//    }
     
     public static class Builder<T extends Model> {
         protected T model;
@@ -641,6 +658,7 @@ public class ParallelWrapper implements AutoCloseable {
         private boolean onRootModel = false;
 
         private int nEpochs_i;
+        protected StringBuilder features = new StringBuilder();
         
         public Trainer(int threadId, Model model, int rootDevice, boolean useMDS, int nEpochs_i) {
             this(threadId, model, rootDevice, nEpochs_i);
@@ -816,7 +834,10 @@ logger.info("***temModel6=="+ nEpochs_i + "----" + nEpochs);
 if (nEpochs_i == nEpochs - 1) {
 	MultiLayerNetwork temModel = (MultiLayerNetwork) replicatedModel;
 	logger.info("***temModel6==");
-	exportExtractedFeatures(temModel);
+//	exportExtractedFeatures(temModel);
+	INDArray input = temModel.getOutputLayer().input();
+	features.append(input.toString().replace("[[", "").replaceAll("\\],", "")
+			.replaceAll(" \\[", "").replace("]]", "") + "\n");
 }
       
                         }
