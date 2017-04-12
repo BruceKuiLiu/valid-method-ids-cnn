@@ -38,13 +38,14 @@ import org.nd4j.linalg.factory.Nd4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.lu.uni.util.FileHelper;
 import lombok.NonNull;
 
 public class ParallelWrapper implements AutoCloseable {
 
 	private static Logger logger = LoggerFactory.getLogger(ParallelWrapper.class);
 	
-	public Model model;
+	protected Model model;
     protected int workers = 2;
     protected int prefetchSize = 2;
     protected int averagingFrequency = 1;
@@ -58,6 +59,9 @@ public class ParallelWrapper implements AutoCloseable {
     protected List<IterationListener> listeners = new ArrayList<>();
     protected StatsStorageRouter storageRouter;
     protected boolean isMQ;
+    
+    protected int nEpochs;
+    protected int batchSize_;
 
     // log uncaught exceptions
     Thread.UncaughtExceptionHandler handler = new Thread.UncaughtExceptionHandler() {
@@ -111,13 +115,13 @@ public class ParallelWrapper implements AutoCloseable {
      *
      * @param source
      */
-    public synchronized void fit(@NonNull MultiDataSetIterator source) {
+    public synchronized void fit(@NonNull MultiDataSetIterator source, int nEpochs_i) {
         stopFit.set(false);
         if (zoo == null) {
             zoo = new Trainer[workers];
             for (int cnt = 0; cnt < workers; cnt++) {
                 // we pass true here, to tell Trainer to use MultiDataSet queue for training
-                zoo[cnt] = new Trainer(cnt, model, Nd4j.getAffinityManager().getDeviceForCurrentThread(), true);
+                zoo[cnt] = new Trainer(cnt, model, Nd4j.getAffinityManager().getDeviceForCurrentThread(), true, nEpochs_i);
                 zoo[cnt].setUncaughtExceptionHandler(handler);
                 zoo[cnt].start();
             }
@@ -329,13 +333,14 @@ public class ParallelWrapper implements AutoCloseable {
      *
      * @param source
      */
-    public synchronized void fit(@NonNull DataSetIterator source) {
-    	logger.info("***fit...");
+    public synchronized void fit(@NonNull DataSetIterator source, int nEpochs_i, int batchSize_, String fileName) {
+    	this.batchSize_ = batchSize_;
+    	this.fileName = fileName;
         stopFit.set(false);
         if (zoo == null) {
             zoo = new Trainer[workers];
             for (int cnt = 0; cnt < workers; cnt++) {
-                zoo[cnt] = new Trainer(cnt, model, Nd4j.getAffinityManager().getDeviceForCurrentThread());
+                zoo[cnt] = new Trainer(cnt, model, Nd4j.getAffinityManager().getDeviceForCurrentThread(), nEpochs_i);
 
                 // if if we're using MQ here - we'd like
                 if (isMQ)
@@ -347,7 +352,6 @@ public class ParallelWrapper implements AutoCloseable {
         }
         source.reset();
 
-        logger.info("***testing1...");
         DataSetIterator iterator;
         if (prefetchSize > 0 && source.asyncSupported()) {
             if (isMQ) {
@@ -366,7 +370,6 @@ public class ParallelWrapper implements AutoCloseable {
         AtomicInteger locker = new AtomicInteger(0);
         int whiles = 0;
         
-        logger.info("***testing2...");
         while (iterator.hasNext() && !stopFit.get()) {
             whiles++;
             DataSet dataSet = iterator.next();
@@ -386,7 +389,6 @@ public class ParallelWrapper implements AutoCloseable {
             /*
                 if all workers are dispatched now, join till all are finished
             */
-            logger.info("***testing..." + whiles);
             if (pos + 1 == workers || !iterator.hasNext()) {
                 iterationsCounter.incrementAndGet();
 
@@ -403,7 +405,6 @@ public class ParallelWrapper implements AutoCloseable {
                 /*
                     average model, and propagate it to whole
                 */
-                logger.info("***testing3...");
                 if (iterationsCounter.get() % averagingFrequency == 0 && pos + 1 == workers) {
                     double score = getScore(locker);
 
@@ -438,12 +439,10 @@ public class ParallelWrapper implements AutoCloseable {
 
                         ((MultiLayerNetwork) model).setScore(score);
                         
-                        MultiLayerNetwork temModel = (MultiLayerNetwork) model;
-                    	logger.info("***temModel1" + temModel.getOutputLayer().input());
-                    	logger.info("***testing4...");
+//                      MultiLayerNetwork temModel = (MultiLayerNetwork) model;
+//                    	logger.info("***temModel1" + temModel.getOutputLayer().input());
                     } else if (model instanceof ComputationGraph) {
                         averageUpdatersState(locker, score);
-                        logger.info("***testing5...");
                     }
 
                     if (legacyAveraging && Nd4j.getAffinityManager().getNumberOfDevices() > 1) {
@@ -451,17 +450,11 @@ public class ParallelWrapper implements AutoCloseable {
                             zoo[cnt].updateModel(model);
                         }
                     }
-                    logger.info("***testing6...");
-//                    if (model instanceof MultiLayerNetwork) {
-                    	MultiLayerNetwork temModel = (MultiLayerNetwork) model;
-                    	logger.info("***temModel2" + temModel.getOutputLayer().input());
-//                    }
+//                    MultiLayerNetwork temModel = (MultiLayerNetwork) model;
+//                    logger.info("***temModel2" + temModel.getOutputLayer().input());
                 }
                 locker.set(0);
             }
-            logger.info("***testing7...");
-          	MultiLayerNetwork temModel = (MultiLayerNetwork) model;
-          	logger.info("***temModel3" + temModel.getOutputLayer().input());
         }// end of while
 
         // sanity checks, or the dataset may never average
@@ -472,7 +465,24 @@ public class ParallelWrapper implements AutoCloseable {
         logger.debug("Iterations passed: {}", iterationsCounter.get());
         //        iterationsCounter.set(0);
     }
-
+    
+    private int counter = 0;
+    private StringBuilder features = new StringBuilder();
+    private String fileName = "";
+    public synchronized void exportExtractedFeatures(MultiLayerNetwork temModel) {
+//    	temModel.getLabels();
+    	INDArray input = temModel.getOutputLayer().input();
+    	features.append(input.toString().replace("[[", "").replaceAll("\\],", "")
+    			.replaceAll(" \\[", "").replace("]]", "") + "\n");
+    	counter += batchSize_;
+    	if (counter >= 10000) {
+    		logger.info("***temModel6" + temModel.getOutputLayer().input());
+    		FileHelper.outputToFile(fileName, features, true);
+    		features.setLength(0);
+    		counter = 0;
+    	}
+    }
+    
     public static class Builder<T extends Model> {
         protected T model;
         protected int workers = Nd4j.getAffinityManager().getNumberOfDevices();
@@ -482,15 +492,16 @@ public class ParallelWrapper implements AutoCloseable {
         protected boolean averageUpdaters = true;
         protected boolean legacyAveraging = true;
         protected boolean isMQ = false; // Nd4j.getAffinityManager().getNumberOfDevices() > 1;
+        protected int nEpochs = 1;
 
         /**
          * Build ParallelWrapper for MultiLayerNetwork
          *
          * @param model
          */
-        public Builder(@NonNull T model) {
-        	logger.info("*** Model...");
+        public Builder(@NonNull T model, int nEpochs) {
             this.model = model;
+            this.nEpochs = nEpochs;
         }
 
         /**
@@ -604,6 +615,7 @@ public class ParallelWrapper implements AutoCloseable {
             wrapper.averageUpdaters = this.averageUpdaters;
             wrapper.legacyAveraging = this.legacyAveraging;
             wrapper.isMQ = this.isMQ;
+            wrapper.nEpochs = this.nEpochs;
 
             return wrapper;
         }
@@ -623,19 +635,20 @@ public class ParallelWrapper implements AutoCloseable {
         private final String uuid = UUID.randomUUID().toString();
         private boolean onRootModel = false;
 
-
-
-        public Trainer(int threadId, Model model, int rootDevice, boolean useMDS) {
-            this(threadId, model, rootDevice);
+        private int nEpochs_i;
+        
+        public Trainer(int threadId, Model model, int rootDevice, boolean useMDS, int nEpochs_i) {
+            this(threadId, model, rootDevice, nEpochs_i);
             this.useMDS = useMDS;
         }
 
-        public Trainer(int threadId, Model model, int rootDevice) {
+        public Trainer(int threadId, Model model, int rootDevice, int nEpochs_i) {
             this.threadId = threadId;
             this.setDaemon(true);
             this.setName("My ParallelWrapper trainer " + threadId);
 
             this.originalModel = model;
+            this.nEpochs_i = nEpochs_i;
             //if (rootDevice != threadId) {
                 /*if (model instanceof MultiLayerNetwork) {
                     this.replicatedModel = ((MultiLayerNetwork) model).clone();
@@ -683,8 +696,8 @@ public class ParallelWrapper implements AutoCloseable {
 
                     updater.setStateViewArray((MultiLayerNetwork) replicatedModel, viewD, false);
                 }
-              	MultiLayerNetwork temModel = (MultiLayerNetwork) replicatedModel;
-              	logger.info("***temModel4" + temModel.getOutputLayer().input());
+//              	MultiLayerNetwork temModel = (MultiLayerNetwork) replicatedModel;
+//              	logger.info("***temModel4" + temModel.getOutputLayer().input());
             } else if (replicatedModel instanceof ComputationGraph) {
                 replicatedModel.setParams(model.params().dup());
 
@@ -747,9 +760,6 @@ public class ParallelWrapper implements AutoCloseable {
                         }
 
                         ((MultiLayerNetwork) this.replicatedModel).setListeners(replicatedListeners);
-
-                      	MultiLayerNetwork temModel = (MultiLayerNetwork) replicatedModel;
-                      	logger.info("***temModel5" + temModel.getOutputLayer().input());
                     }
                 } else if (originalModel instanceof ComputationGraph) {
                     if (!onRootModel) {
@@ -796,9 +806,12 @@ public class ParallelWrapper implements AutoCloseable {
                                 ((GridExecutioner) Nd4j.getExecutioner()).flushQueueBlocking();
 
                             running.decrementAndGet();
-
-                          	MultiLayerNetwork temModel = (MultiLayerNetwork) replicatedModel;
-                          	logger.info("***temModel6" + temModel.getOutputLayer().input());
+                            
+if (nEpochs_i == nEpochs - 1) {
+	MultiLayerNetwork temModel = (MultiLayerNetwork) replicatedModel;
+	exportExtractedFeatures(temModel);
+}
+      
                         }
                     }
                 } else {
@@ -816,8 +829,8 @@ public class ParallelWrapper implements AutoCloseable {
 
                             running.decrementAndGet();
 
-                          	MultiLayerNetwork temModel = (MultiLayerNetwork) replicatedModel;
-                          	logger.info("***temModel7" + temModel.getOutputLayer().input());
+//                          	MultiLayerNetwork temModel = (MultiLayerNetwork) replicatedModel;
+//                          	logger.info("***temModel7" + temModel.getOutputLayer().input());
                         }
                     }
                 }
@@ -836,6 +849,7 @@ public class ParallelWrapper implements AutoCloseable {
                 LockSupport.parkNanos(50000L);
             }
         }
+   
     }
 
 }

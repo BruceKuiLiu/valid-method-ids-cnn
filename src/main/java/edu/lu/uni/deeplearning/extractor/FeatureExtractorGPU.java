@@ -176,7 +176,7 @@ public class FeatureExtractorGPU {
 
         // ParallelWrapper will take care of load balancing between GPUs.
         @SuppressWarnings({ "unchecked", "rawtypes" })
-		ParallelWrapper wrapper = new ParallelWrapper.Builder(model)
+		ParallelWrapper wrapper = new ParallelWrapper.Builder(model, nEpochs)
             // DataSets prefetching options. Set this value with respect to number of actual devices
             .prefetchBuffer(4)
 
@@ -202,27 +202,10 @@ public class FeatureExtractorGPU {
         String fileName = inputFile.getPath().replace(inputPath, outputPath);
         int batchers = 0;
         for( int i=0; i<nEpochs; i++ ) {
-//        	while (trainingDataIter.hasNext()) {
-//        		// Please note: we're feeding ParallelWrapper with iterator, not model directly
-//        		wrapper.fit(trainingDataIter);
-//        		
-//        		if (i == nEpochs - 1) {
-//        			MultiLayerNetwork mo = (MultiLayerNetwork) wrapper.model;
-//                	INDArray input = mo.getOutputLayer().input();
-//                	features.append(input.toString().replace("[[", "").replaceAll("\\],", "")
-//                			.replaceAll(" \\[", "").replace("]]", "") + "\n");
-//                	
-//                	batchers ++;
-//                	if ((batchers * batchSize) >= 100000) {
-//                		FileHelper.outputToFile(fileName, features, true);
-//                		features.setLength(0);
-//                	}
-//                }
-//        	}
         	// Please note: we're feeding ParallelWrapper with iterator, not model directly
-    		wrapper.fit(trainingDataIter);
+    		wrapper.fit(trainingDataIter, i, batchSize, fileName);
     		
-    		if (i == nEpochs - 1) {
+//    		if (i == nEpochs - 1) {
 //    			MultiLayerNetwork mo = (MultiLayerNetwork) wrapper.model;
 //            	INDArray input = mo.getOutputLayer().input();
 //            	features.append(input.toString().replace("[[", "").replaceAll("\\],", "")
@@ -233,14 +216,11 @@ public class FeatureExtractorGPU {
 //            		FileHelper.outputToFile(fileName, features, true);
 //            		features.setLength(0);
 //            	}
-            }
+//            }
             log.info("*** Completed epoch {} ***", i);
         }
-//        try {
-//			wrapper.close();
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//		}
+        wrapper.shutdown();
+        
         log.info("****************Extracting features finished****************");
         
     	FileHelper.outputToFile(fileName, features, true);
