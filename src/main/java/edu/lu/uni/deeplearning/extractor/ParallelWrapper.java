@@ -683,7 +683,7 @@ public class ParallelWrapper implements AutoCloseable {
 
                     updater.setStateViewArray((MultiLayerNetwork) replicatedModel, viewD, false);
                 }
-              	MultiLayerNetwork temModel = (MultiLayerNetwork) model;
+              	MultiLayerNetwork temModel = (MultiLayerNetwork) replicatedModel;
               	logger.info("***temModel4" + temModel.getOutputLayer().input());
             } else if (replicatedModel instanceof ComputationGraph) {
                 replicatedModel.setParams(model.params().dup());
@@ -748,7 +748,7 @@ public class ParallelWrapper implements AutoCloseable {
 
                         ((MultiLayerNetwork) this.replicatedModel).setListeners(replicatedListeners);
 
-                      	MultiLayerNetwork temModel = (MultiLayerNetwork) model;
+                      	MultiLayerNetwork temModel = (MultiLayerNetwork) replicatedModel;
                       	logger.info("***temModel5" + temModel.getOutputLayer().input());
                     }
                 } else if (originalModel instanceof ComputationGraph) {
@@ -797,7 +797,7 @@ public class ParallelWrapper implements AutoCloseable {
 
                             running.decrementAndGet();
 
-                          	MultiLayerNetwork temModel = (MultiLayerNetwork) model;
+                          	MultiLayerNetwork temModel = (MultiLayerNetwork) replicatedModel;
                           	logger.info("***temModel6" + temModel.getOutputLayer().input());
                         }
                     }
@@ -816,7 +816,7 @@ public class ParallelWrapper implements AutoCloseable {
 
                             running.decrementAndGet();
 
-                          	MultiLayerNetwork temModel = (MultiLayerNetwork) model;
+                          	MultiLayerNetwork temModel = (MultiLayerNetwork) replicatedModel;
                           	logger.info("***temModel7" + temModel.getOutputLayer().input());
                         }
                     }
