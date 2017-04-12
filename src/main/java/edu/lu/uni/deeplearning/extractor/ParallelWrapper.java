@@ -467,7 +467,7 @@ public class ParallelWrapper implements AutoCloseable {
     }
     
     private int counter = 0;
-    private StringBuilder features = new StringBuilder();
+    public StringBuilder features = new StringBuilder();
     private String fileName = "";
     public synchronized void exportExtractedFeatures(MultiLayerNetwork temModel) {
 //    	temModel.getLabels();
@@ -476,7 +476,7 @@ public class ParallelWrapper implements AutoCloseable {
     			.replaceAll(" \\[", "").replace("]]", "") + "\n");
     	counter += batchSize_;
     	if (counter >= 10000) {
-    		logger.info("***temModel6" + temModel.getOutputLayer().input());
+    		logger.info("***export features");
     		FileHelper.outputToFile(fileName, features, true);
     		features.setLength(0);
     		counter = 0;
@@ -809,6 +809,7 @@ public class ParallelWrapper implements AutoCloseable {
                             
 if (nEpochs_i == nEpochs - 1) {
 	MultiLayerNetwork temModel = (MultiLayerNetwork) replicatedModel;
+	logger.info("***temModel6" + temModel.getOutputLayer().input());
 	exportExtractedFeatures(temModel);
 }
       

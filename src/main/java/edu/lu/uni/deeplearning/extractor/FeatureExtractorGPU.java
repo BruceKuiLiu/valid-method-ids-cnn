@@ -219,11 +219,15 @@ public class FeatureExtractorGPU {
 //            }
             log.info("*** Completed epoch {} ***", i);
         }
+
+        features = wrapper.features;
+        if (features.length() > 0) {
+        	FileHelper.outputToFile(fileName, features, true);
+        }
         wrapper.shutdown();
         
         log.info("****************Extracting features finished****************");
-        
-    	FileHelper.outputToFile(fileName, features, true);
+    	
 	}
 
 	public void addMethodNameToFeatures(String file, String filePath) throws IOException {
