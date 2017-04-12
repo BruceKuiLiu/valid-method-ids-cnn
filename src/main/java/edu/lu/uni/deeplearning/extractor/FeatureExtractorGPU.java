@@ -176,11 +176,9 @@ public class FeatureExtractorGPU {
         MultiLayerNetwork model = new MultiLayerNetwork(conf);
         model.init();
 
-        
-        
         // ParallelWrapper will take care of load balancing between GPUs.
         @SuppressWarnings({ "unchecked", "rawtypes" })
-		ParallelWrapper wrapper = new ParallelWrapper.Builder(model)
+		MyParallelWrapper wrapper = new MyParallelWrapper.Builder(model)
             // DataSets prefetching options. Set this value with respect to number of actual devices
             .prefetchBuffer(4)
 
@@ -209,8 +207,10 @@ public class FeatureExtractorGPU {
         	while (trainingDataIter.hasNext()) {
         		// Please note: we're feeding ParallelWrapper with iterator, not model directly
         		wrapper.fit(trainingDataIter);
+        		
         		if (i == nEpochs - 1) {
-                	INDArray input = model.getOutputLayer().input();
+        			MultiLayerNetwork mo = (MultiLayerNetwork) wrapper.model;
+                	INDArray input = mo.getOutputLayer().input();
                 	features.append(input.toString().replace("[[", "").replaceAll("\\],", "")
                 			.replaceAll(" \\[", "").replace("]]", "") + "\n");
                 	
@@ -223,6 +223,11 @@ public class FeatureExtractorGPU {
         	}
             log.info("*** Completed epoch {} ***", i);
         }
+        try {
+			wrapper.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
         log.info("****************Extracting features finished****************");
         
     	FileHelper.outputToFile(fileName, features, true);

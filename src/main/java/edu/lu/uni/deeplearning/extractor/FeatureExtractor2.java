@@ -92,10 +92,7 @@ public class FeatureExtractor2 {
 	public void setNumOfOutOfLayer2(int numOfOutOfLayer2) {
 		this.numOfOutOfLayer2 = numOfOutOfLayer2;
 	}
-/**
- * 
- * @param outputPath
- */
+
 	public void setOutputPath(String outputPath) {
 		this.outputPath = outputPath;
 	}
@@ -189,7 +186,7 @@ public class FeatureExtractor2 {
             log.info("*** Completed epoch {} ***", i);
         }
         log.info("****************Extracting features finished****************");
-        
+        model.clear();
     	FileHelper.outputToFile(fileName, features, true);
 	}
 
