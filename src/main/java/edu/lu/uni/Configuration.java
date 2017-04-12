@@ -52,7 +52,7 @@ public class Configuration {
 	/**
 	 * Configuration of the third step: extract features of method bodies by deep learning with the CNN algorithm.
 	 */
-	public static final int BATCH_SIZE = 10000;
+	public static final int BATCH_SIZE = 1000;
 	public static final int SIZE_OF_FEATURE_VECTOR = 100; // size of extracted feature vectors
 	public static final String DATA_APPZENDED_ZERO = "OUTPUT/data_for_CNN/append_zero/";        // file path of output
 	public static final String DATA_STANDARDIZED = "OUTPUT/data_for_CNN/standardized_data/";    // file path of output

@@ -176,7 +176,7 @@ public class FeatureExtractorGPU {
 
         // ParallelWrapper will take care of load balancing between GPUs.
         @SuppressWarnings({ "unchecked", "rawtypes" })
-		MyParallelWrapper wrapper = new MyParallelWrapper.Builder(model)
+		ParallelWrapper wrapper = new ParallelWrapper.Builder(model)
             // DataSets prefetching options. Set this value with respect to number of actual devices
             .prefetchBuffer(4)
 

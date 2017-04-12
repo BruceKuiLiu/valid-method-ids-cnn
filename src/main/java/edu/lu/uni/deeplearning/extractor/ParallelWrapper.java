@@ -40,9 +40,9 @@ import org.slf4j.LoggerFactory;
 
 import lombok.NonNull;
 
-public class MyParallelWrapper implements AutoCloseable {
+public class ParallelWrapper implements AutoCloseable {
 
-	private static Logger log = LoggerFactory.getLogger(MyParallelWrapper.class);
+	private static Logger logger = LoggerFactory.getLogger(ParallelWrapper.class);
 	
 	public Model model;
     protected int workers = 2;
@@ -62,11 +62,11 @@ public class MyParallelWrapper implements AutoCloseable {
     // log uncaught exceptions
     Thread.UncaughtExceptionHandler handler = new Thread.UncaughtExceptionHandler() {
         public void uncaughtException(Thread th, Throwable ex) {
-            log.error("Uncaught exception: " + ex);
+            logger.error("Uncaught exception: " + ex);
         }
     };
 
-    protected MyParallelWrapper(Model model, int workers, int prefetchSize) {
+    protected ParallelWrapper(Model model, int workers, int prefetchSize) {
         this.model = model;
         this.workers = workers;
         this.prefetchSize = prefetchSize;
@@ -188,10 +188,10 @@ public class MyParallelWrapper implements AutoCloseable {
 
         // sanity checks, or the dataset may never average
         if (!wasAveraged)
-            log.warn("Parameters were never averaged on current fit(). Ratios of batch size, num workers, and averaging frequency may be responsible.");
+            logger.warn("Parameters were never averaged on current fit(). Ratios of batch size, num workers, and averaging frequency may be responsible.");
         //            throw new IllegalStateException("Parameters were never averaged. Please check batch size ratios, number of workers, and your averaging frequency.");
 
-        log.debug("Iterations passed: {}", iterationsCounter.get());
+        logger.debug("Iterations passed: {}", iterationsCounter.get());
         //        iterationsCounter.set(0);
     }
 
@@ -221,7 +221,7 @@ public class MyParallelWrapper implements AutoCloseable {
 
         // TODO: improve this
         if (reportScore)
-            log.info("Averaged score: " + score);
+            logger.info("***Averaged score: " + score);
         return score;
     }
 
@@ -305,7 +305,7 @@ public class MyParallelWrapper implements AutoCloseable {
                 if (l instanceof RoutingIterationListener) {
                     RoutingIterationListener rl = (RoutingIterationListener) l;
                     if (rl.getStorageRouter() == null) {
-                        log.warn("RoutingIterationListener provided without providing any StatsStorage instance. Iterator may not function without one. Listener: {}",
+                        logger.warn("RoutingIterationListener provided without providing any StatsStorage instance. Iterator may not function without one. Listener: {}",
                                         l);
                     } else if (!(rl.getStorageRouter() instanceof Serializable)) {
                         //Spark would throw a (probably cryptic) serialization exception later anyway...
@@ -330,6 +330,7 @@ public class MyParallelWrapper implements AutoCloseable {
      * @param source
      */
     public synchronized void fit(@NonNull DataSetIterator source) {
+    	logger.info("***fit...");
         stopFit.set(false);
         if (zoo == null) {
             zoo = new Trainer[workers];
@@ -350,7 +351,7 @@ public class MyParallelWrapper implements AutoCloseable {
         if (prefetchSize > 0 && source.asyncSupported()) {
             if (isMQ) {
                 if (workers % Nd4j.getAffinityManager().getNumberOfDevices() != 0)
-                    log.warn("Number of workers [{}] isn't optimal for available devices [{}]", workers,
+                    logger.warn("Number of workers [{}] isn't optimal for available devices [{}]", workers,
                                     Nd4j.getAffinityManager().getNumberOfDevices());
 
                 MagicQueue queue = new MagicQueue.Builder().setCapacityPerFlow(8).setMode(MagicQueue.Mode.SEQUENTIAL)
@@ -433,7 +434,7 @@ public class MyParallelWrapper implements AutoCloseable {
                         ((MultiLayerNetwork) model).setScore(score);
                         
                         MultiLayerNetwork temModel = (MultiLayerNetwork) model;
-                    	log.info("***" + temModel.getOutputLayer().input());
+                    	logger.info("***" + temModel.getOutputLayer().input());
                     } else if (model instanceof ComputationGraph) {
                         averageUpdatersState(locker, score);
                     }
@@ -446,7 +447,7 @@ public class MyParallelWrapper implements AutoCloseable {
                     
 //                    if (model instanceof MultiLayerNetwork) {
                     	MultiLayerNetwork temModel = (MultiLayerNetwork) model;
-                    	log.info("***" + temModel.getOutputLayer().input());
+                    	logger.info("***" + temModel.getOutputLayer().input());
 //                    }
                 }
                 locker.set(0);
@@ -455,10 +456,10 @@ public class MyParallelWrapper implements AutoCloseable {
 
         // sanity checks, or the dataset may never average
         if (!wasAveraged)
-            log.warn("Parameters were never averaged on current fit(). Ratios of batch size, num workers, and averaging frequency may be responsible.");
+            logger.warn("Parameters were never averaged on current fit(). Ratios of batch size, num workers, and averaging frequency may be responsible.");
         //            throw new IllegalStateException("Parameters were never averaged. Please check batch size ratios, number of workers, and your averaging frequency.");
 
-        log.debug("Iterations passed: {}", iterationsCounter.get());
+        logger.debug("Iterations passed: {}", iterationsCounter.get());
         //        iterationsCounter.set(0);
     }
 
@@ -478,7 +479,7 @@ public class MyParallelWrapper implements AutoCloseable {
          * @param model
          */
         public Builder(@NonNull T model) {
-        	log.info("*** Model...");
+        	logger.info("*** Model...");
             this.model = model;
         }
 
@@ -586,8 +587,8 @@ public class MyParallelWrapper implements AutoCloseable {
          *
          * @return
          */
-        public MyParallelWrapper build() {
-            MyParallelWrapper wrapper = new MyParallelWrapper(model, workers, prefetchSize);
+        public ParallelWrapper build() {
+            ParallelWrapper wrapper = new ParallelWrapper(model, workers, prefetchSize);
             wrapper.averagingFrequency = this.averagingFrequency;
             wrapper.reportScore = this.reportScore;
             wrapper.averageUpdaters = this.averageUpdaters;
@@ -726,7 +727,7 @@ public class MyParallelWrapper implements AutoCloseable {
                                                 ((RoutingIterationListener) listener).clone();
                                 routingListener.setSessionID(((RoutingIterationListener) listener).getSessionID());
                                 routingListener.setWorkerID(uuid);
-                                routingListener.setStorageRouter(MyParallelWrapper.this.storageRouter);
+                                routingListener.setStorageRouter(ParallelWrapper.this.storageRouter);
                                 replicatedListeners.add(routingListener);
                             } else {
                                 replicatedListeners.add(listener);
@@ -751,7 +752,7 @@ public class MyParallelWrapper implements AutoCloseable {
                                 routingIterationListener
                                                 .setSessionID(((RoutingIterationListener) listener).getSessionID());
                                 routingIterationListener.setWorkerID(uuid);
-                                routingIterationListener.setStorageRouter(MyParallelWrapper.this.storageRouter);
+                                routingIterationListener.setStorageRouter(ParallelWrapper.this.storageRouter);
                                 replicatedListeners.add(routingIterationListener);
                             } else {
                                 replicatedListeners.add(listener);
