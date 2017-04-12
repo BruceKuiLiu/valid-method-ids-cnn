@@ -399,20 +399,20 @@ public class ParallelWrapper implements AutoCloseable {
                         throw new RuntimeException(e);
                     }
                     
-                    features.append(zoo[cnt].features);
-            		logger.info("***export features" + zoo[cnt].features);
-                    counter += batchSize_;
-                	logger.info("***temModel----a");
-                	if (counter >= 10000) {
-                		logger.info("***export features");
-                		FileHelper.outputToFile(fileName, features, true);
-                		features.setLength(0);
-                		counter = 0;
-                	}
-                	logger.info("***temModel----b");
-                	if (features.length() > 0) {
-                		logger.info("***temModel----c");
-                	}
+//                    features.append(zoo[cnt].features);
+//            		logger.info("***export features" + zoo[cnt].features);
+//                    counter += batchSize_;
+//                	logger.info("***temModel----a");
+//                	if (counter >= 10000) {
+//                		logger.info("***export features");
+//                		FileHelper.outputToFile(fileName, features, true);
+//                		features.setLength(0);
+//                		counter = 0;
+//                	}
+//                	logger.info("***temModel----b");
+//                	if (features.length() > 0) {
+//                		logger.info("***temModel----c");
+//                	}
                 }
 
                 Nd4j.getMemoryManager().invokeGcOccasionally();
@@ -470,7 +470,20 @@ public class ParallelWrapper implements AutoCloseable {
                 }
                 locker.set(0);
             }
-            
+            features.append(zoo[pos].features);
+    		logger.info("***export features===" + zoo[pos].features);
+            counter += batchSize_;
+        	logger.info("***temModel----a");
+        	if (counter >= 10000) {
+        		logger.info("***export features");
+        		FileHelper.outputToFile(fileName, features, true);
+        		features.setLength(0);
+        		counter = 0;
+        	}
+        	logger.info("***temModel----b");
+        	if (features.length() > 0) {
+        		logger.info("***temModel----c");
+        	}
             
         }// end of while
 
@@ -830,7 +843,6 @@ public class ParallelWrapper implements AutoCloseable {
 
                             running.decrementAndGet();
                         
-logger.info("***temModel6=="+ nEpochs_i + "----" + nEpochs);
 if (nEpochs_i == nEpochs - 1) {
 	MultiLayerNetwork temModel = (MultiLayerNetwork) replicatedModel;
 	logger.info("***temModel6==");
