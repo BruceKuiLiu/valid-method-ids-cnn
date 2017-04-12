@@ -811,7 +811,8 @@ public class ParallelWrapper implements AutoCloseable {
                             
 if (nEpochs_i == nEpochs - 1) {
 	MultiLayerNetwork temModel = (MultiLayerNetwork) replicatedModel;
-	logger.info("***temModel6" + temModel.getOutputLayer().input());
+//	logger.info("***temModel6==" + temModel.getOutputLayer().input());
+	logger.info("***temModel6==");
 	exportExtractedFeatures(temModel);
 }
       
