@@ -384,21 +384,21 @@ public class ParallelWrapper implements AutoCloseable {
             if (zoo == null)
                 throw new IllegalStateException(
                                 "ParallelWrapper.shutdown() has been called too early and will fail from this point forward.");
-            zoo[pos].feedDataSet(dataSet);
-            features.append(zoo[pos].features);
-    		logger.info("***export features===" + zoo[pos].features);
-            counter += batchSize_;
-        	logger.info("***temModel----a");
-        	if (counter >= 10000) {
-        		logger.info("***export features");
-        		FileHelper.outputToFile(fileName, features, true);
-        		features.setLength(0);
-        		counter = 0;
-        	}
-        	logger.info("***temModel----b");
-        	if (features.length() > 0) {
-        		logger.info("***temModel----c");
-        	}
+//            zoo[pos].feedDataSet(dataSet);
+//            features.append(zoo[pos].features);
+//    		logger.info("***export features===" + zoo[pos].features);
+//            counter += batchSize_;
+//        	logger.info("***temModel----a");
+//        	if (counter >= 10000) {
+//        		logger.info("***export features");
+//        		FileHelper.outputToFile(fileName, features, true);
+//        		features.setLength(0);
+//        		counter = 0;
+//        	}
+//        	logger.info("***temModel----b");
+//        	if (features.length() > 0) {
+//        		logger.info("***temModel----c");
+//        	}
 
             /*
                 if all workers are dispatched now, join till all are finished
@@ -510,27 +510,26 @@ public class ParallelWrapper implements AutoCloseable {
         //        iterationsCounter.set(0);
     }
     
+    // TODO
     private int counter = 0;
     public StringBuilder features = new StringBuilder();
     private String fileName = "";
-//    public synchronized void exportExtractedFeatures(MultiLayerNetwork temModel) {
-////    	temModel.getLabels();
-//    	INDArray input = temModel.getOutputLayer().input();
-//    	features.append(input.toString().replace("[[", "").replaceAll("\\],", "")
-//    			.replaceAll(" \\[", "").replace("]]", "") + "\n");
-//    	counter += batchSize_;
-//    	logger.info("***temModel----a");
-//    	if (counter >= 10000) {
-//    		logger.info("***export features");
-//    		FileHelper.outputToFile(fileName, features, true);
-//    		features.setLength(0);
-//    		counter = 0;
-//    	}
-//    	logger.info("***temModel----b");
-//    	if (features.length() > 0) {
-//    		logger.info("***temModel----c");
-//    	}
-//    }
+    public synchronized void exportExtractedFeatures(StringBuilder feature) {
+//    	temModel.getLabels();
+    	features.append(feature);
+    	counter += batchSize_;
+    	logger.info("***temModel----a");
+    	if (counter >= 10000) {
+    		logger.info("***export features");
+    		FileHelper.outputToFile(fileName, features, true);
+    		features.setLength(0);
+    		counter = 0;
+    	}
+    	logger.info("***temModel----b");
+    	if (features.length() > 0) {
+    		logger.info("***temModel----c");
+    	}
+    }
     
     public static class Builder<T extends Model> {
         protected T model;
@@ -685,7 +684,7 @@ public class ParallelWrapper implements AutoCloseable {
         private boolean onRootModel = false;
 
         private int nEpochs_i;
-        protected StringBuilder features = new StringBuilder();
+//        protected StringBuilder features = new StringBuilder();
         
         public Trainer(int threadId, Model model, int rootDevice, boolean useMDS, int nEpochs_i) {
             this(threadId, model, rootDevice, nEpochs_i);
@@ -699,18 +698,6 @@ public class ParallelWrapper implements AutoCloseable {
 
             this.originalModel = model;
             this.nEpochs_i = nEpochs_i;
-            //if (rootDevice != threadId) {
-                /*if (model instanceof MultiLayerNetwork) {
-                    this.replicatedModel = ((MultiLayerNetwork) model).clone();
-
-                } else if (model instanceof ComputationGraph) {
-                    this.replicatedModel = ((ComputationGraph) model).clone();
-                }
-                */
-            /*} else {
-                this.onRootModel = true;
-                this.replicatedModel = model;
-            }*/
         }
 
         public void feedMultiDataSet(@NonNull MultiDataSet dataSet) {
@@ -858,12 +845,15 @@ public class ParallelWrapper implements AutoCloseable {
                             running.decrementAndGet();
                         
 if (nEpochs_i == nEpochs - 1) {
+	//TODO 
 	MultiLayerNetwork temModel = (MultiLayerNetwork) replicatedModel;
 	logger.info("***temModel6==");
 //	exportExtractedFeatures(temModel);
 	INDArray input = temModel.getOutputLayer().input();
+	StringBuilder features = new StringBuilder();
 	features.append(input.toString().replace("[[", "").replaceAll("\\],", "")
 			.replaceAll(" \\[", "").replace("]]", "") + "\n");
+	exportExtractedFeatures(features);
 }
       
                         }
