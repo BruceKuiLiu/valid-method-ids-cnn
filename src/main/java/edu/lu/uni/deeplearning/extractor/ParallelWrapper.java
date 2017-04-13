@@ -387,17 +387,16 @@ public class ParallelWrapper implements AutoCloseable {
             zoo[pos].feedDataSet(dataSet);
             features.append(zoo[pos].features);
     		logger.info("***export features===" + zoo[pos].features);
-            counter += batchSize_;
         	logger.info("***temModel----a");
-        	if (counter >= 10000) {
-        		logger.info("***export features");
-        		FileHelper.outputToFile(fileName, features, true);
-        		features.setLength(0);
-        		counter = 0;
-        	}
-        	logger.info("***temModel----b");
         	if (features.length() > 0) {
-        		logger.info("***temModel----c");
+        		counter += batchSize_;
+            	logger.info("***temModel----b");
+            	if (counter >= 10000) {
+            		logger.info("***export--features");
+            		FileHelper.outputToFile(fileName, features, true);
+            		features.setLength(0);
+            		counter = 0;
+            	}
         	}
 
             /*
@@ -415,17 +414,17 @@ public class ParallelWrapper implements AutoCloseable {
                     
 //                    features.append(zoo[cnt].features);
 //            		logger.info("***export features" + zoo[cnt].features);
-//                    counter += batchSize_;
 //                	logger.info("***temModel----a");
-//                	if (counter >= 10000) {
-//                		logger.info("***export features");
-//                		FileHelper.outputToFile(fileName, features, true);
-//                		features.setLength(0);
-//                		counter = 0;
-//                	}
-//                	logger.info("***temModel----b");
 //                	if (features.length() > 0) {
-//                		logger.info("***temModel----c");
+//                		counter += batchSize_;
+//                    	logger.info("***temModel----b");
+//                    	if (counter >= 10000) {
+//                    		logger.info("***export features");
+//                    		FileHelper.outputToFile(fileName, features, true);
+//                    		features.setLength(0);
+//                    		counter = 0;
+//                    	}
+////                		logger.info("***temModel----c");
 //                	}
                 }
 
@@ -847,14 +846,14 @@ public class ParallelWrapper implements AutoCloseable {
 if (nEpochs_i == nEpochs - 1) {
 	//TODO 
 	MultiLayerNetwork temModel = (MultiLayerNetwork) replicatedModel;
-//	logger.info("***temModel6==");
+	logger.info("***temModel6==");
 //	exportExtractedFeatures(temModel);
 	INDArray input = temModel.getOutputLayer().input();
 //	StringBuilder features = new StringBuilder();
 	features.setLength(0);
 	features.append(input.toString().replace("[[", "").replaceAll("\\],", "")
 			.replaceAll(" \\[", "").replace("]]", "") + "\n");
-	logger.info("***temModel6==" + features);
+//	logger.info("***temModel6==" + features);
 //	exportExtractedFeatures(features);
 }
       
