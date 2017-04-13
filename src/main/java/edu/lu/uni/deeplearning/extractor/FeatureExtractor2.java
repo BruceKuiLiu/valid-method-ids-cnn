@@ -125,7 +125,7 @@ public class FeatureExtractor2 {
                 .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
                 .updater(Updater.NESTEROVS).momentum(0.9)
                 .list()
-                .layer(0, new ConvolutionLayer.Builder(1, sizeOfCodeVec)
+                .layer(0, new ConvolutionLayer.Builder(4, sizeOfCodeVec)
                         //nIn and nOut specify depth. nIn here is the nChannels and nOut is the number of filters to be applied
                         .nIn(nChannels)
                         .stride(1, 1)
