@@ -202,31 +202,16 @@ public class FeatureExtractorGPU {
 //        wrapper.setListeners(new ScoreIterationListener(1));
 //        
 //        String fileName = inputFile.getPath().replace(inputPath, outputPath);
-//        int batchers = 0;
 //        for( int i=0; i<nEpochs; i++ ) {
 //        	// Please note: we're feeding ParallelWrapper with iterator, not model directly
 //    		wrapper.fit(trainingDataIter, i, batchSize, fileName);
-//    		
-////    		if (i == nEpochs - 1) {
-////    			MultiLayerNetwork mo = (MultiLayerNetwork) wrapper.model;
-////            	INDArray input = mo.getOutputLayer().input();
-////            	features.append(input.toString().replace("[[", "").replaceAll("\\],", "")
-////            			.replaceAll(" \\[", "").replace("]]", "") + "\n");
-////            	
-////            	batchers ++;
-////            	if ((batchers * batchSize) >= 100000) {
-////            		FileHelper.outputToFile(fileName, features, true);
-////            		features.setLength(0);
-////            	}
-////            }
 //            log.info("*** Completed epoch {} ***", i);
 //        }
 //
 //        features = wrapper.features;
 //        BufferedReader br = new BufferedReader(new StringReader(features.toString()));
-//        String line = "";
 //        int c = 0;
-//        while ((line = br.readLine()) != null) {
+//        while (br.readLine() != null) {
 //        	c ++;
 //        }
 //        

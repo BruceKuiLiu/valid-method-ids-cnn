@@ -28,8 +28,8 @@ public class App {
 //			example.standardizeData();
 			// feature extracting: deep learning with the CNN algorithm
 //			example.extractFeatureWithCNN();
-//			example.extractFeatures2();
-			example.extractFeaturesOnGPU();
+			example.extractFeatures2();
+//			example.extractFeaturesOnGPU();
 			logger.info("****************Finish off extracting features by CNN****************\n");
 		} catch (IOException e) {
 			e.printStackTrace();
