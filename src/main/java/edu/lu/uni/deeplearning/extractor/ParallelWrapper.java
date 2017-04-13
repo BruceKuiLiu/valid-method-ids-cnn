@@ -514,22 +514,22 @@ public class ParallelWrapper implements AutoCloseable {
     private int counter = 0;
     public StringBuilder features = new StringBuilder();
     private String fileName = "";
-    public synchronized void exportExtractedFeatures(StringBuilder feature) {
-//    	temModel.getLabels();
-    	features.append(feature);
-    	counter += batchSize_;
-    	logger.info("***temModel----a");
-    	if (counter >= 10000) {
-    		logger.info("***export features");
-    		FileHelper.outputToFile(fileName, features, true);
-    		features.setLength(0);
-    		counter = 0;
-    	}
-    	logger.info("***temModel----b");
-    	if (features.length() > 0) {
-    		logger.info("***temModel----c");
-    	}
-    }
+//    public synchronized void exportExtractedFeatures(StringBuilder feature) {
+////    	temModel.getLabels();
+//    	features.append(feature);
+//    	counter += batchSize_;
+//    	logger.info("***temModel----a");
+//    	if (counter >= 10000) {
+//    		logger.info("***export features");
+//    		FileHelper.outputToFile(fileName, features, true);
+//    		features.setLength(0);
+//    		counter = 0;
+//    	}
+//    	logger.info("***temModel----b");
+//    	if (features.length() > 0) {
+//    		logger.info("***temModel----c");
+//    	}
+//    }
     
     public static class Builder<T extends Model> {
         protected T model;
