@@ -117,6 +117,8 @@ public class FeatureExtractorGPU {
         log.info("Load data....");
         RecordReader trainingDataReader = new CSVRecordReader();
         trainingDataReader.initialize(new FileSplit(inputFile));
+        log.info("***input file:" + inputFile.getAbsolutePath());
+        
         DataSetIterator trainingDataIter = new RecordReaderDataSetIterator(trainingDataReader, batchSize);
         
         /*
@@ -194,8 +196,6 @@ public class FeatureExtractorGPU {
 
             .build();
         
-        StringBuilder features = new StringBuilder();
-        
         log.info("Train model....");
 //        model.setListeners(new ScoreIterationListener(1));
         wrapper.setListeners(new ScoreIterationListener(1));
@@ -207,6 +207,7 @@ public class FeatureExtractorGPU {
             log.info("*** Completed epoch {} ***", i);
         }
 
+        StringBuilder features = new StringBuilder();
         features = wrapper.features;
         BufferedReader br = new BufferedReader(new StringReader(features.toString()));
         int c = 0;
@@ -215,6 +216,7 @@ public class FeatureExtractorGPU {
         }
         
         if (features.length() > 0) {
+        	log.info("******final features");
         	FileHelper.outputToFile(fileName, features, true);
         }
         wrapper.shutdown();

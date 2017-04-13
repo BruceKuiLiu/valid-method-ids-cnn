@@ -847,12 +847,14 @@ public class ParallelWrapper implements AutoCloseable {
 if (nEpochs_i == nEpochs - 1) {
 	//TODO 
 	MultiLayerNetwork temModel = (MultiLayerNetwork) replicatedModel;
-	logger.info("***temModel6==");
+//	logger.info("***temModel6==");
 //	exportExtractedFeatures(temModel);
 	INDArray input = temModel.getOutputLayer().input();
 //	StringBuilder features = new StringBuilder();
+	features.setLength(0);
 	features.append(input.toString().replace("[[", "").replaceAll("\\],", "")
 			.replaceAll(" \\[", "").replace("]]", "") + "\n");
+	logger.info("***temModel6==" + features);
 //	exportExtractedFeatures(features);
 }
       
