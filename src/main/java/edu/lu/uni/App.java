@@ -95,8 +95,8 @@ public class App {
 		for (File inputFile : inputFiles) {
 			String fileName = inputFile.getName();
 			int sizeOfVector = Integer.parseInt(fileName.substring(fileName.lastIndexOf("=") + 1, fileName.lastIndexOf(fileExtension)));
-			int batchSize = 1000;
-			int sizeOfFeatureVector = 100;
+			int batchSize = Configuration.BATCH_SIZE;
+			int sizeOfFeatureVector = Configuration.SIZE_OF_FEATURE_VECTOR;
 			
 			FeatureExtractor extractor = new FeatureExtractor(inputFile, sizeOfVector, batchSize, sizeOfFeatureVector);
 			extractor.setOutputPath(outputPath);

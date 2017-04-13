@@ -385,6 +385,20 @@ public class ParallelWrapper implements AutoCloseable {
                 throw new IllegalStateException(
                                 "ParallelWrapper.shutdown() has been called too early and will fail from this point forward.");
             zoo[pos].feedDataSet(dataSet);
+            features.append(zoo[pos].features);
+    		logger.info("***export features===" + zoo[pos].features);
+            counter += batchSize_;
+        	logger.info("***temModel----a");
+        	if (counter >= 10000) {
+        		logger.info("***export features");
+        		FileHelper.outputToFile(fileName, features, true);
+        		features.setLength(0);
+        		counter = 0;
+        	}
+        	logger.info("***temModel----b");
+        	if (features.length() > 0) {
+        		logger.info("***temModel----c");
+        	}
 
             /*
                 if all workers are dispatched now, join till all are finished
@@ -470,20 +484,20 @@ public class ParallelWrapper implements AutoCloseable {
                 }
                 locker.set(0);
             }
-            features.append(zoo[pos].features);
-    		logger.info("***export features===" + zoo[pos].features);
-            counter += batchSize_;
-        	logger.info("***temModel----a");
-        	if (counter >= 10000) {
-        		logger.info("***export features");
-        		FileHelper.outputToFile(fileName, features, true);
-        		features.setLength(0);
-        		counter = 0;
-        	}
-        	logger.info("***temModel----b");
-        	if (features.length() > 0) {
-        		logger.info("***temModel----c");
-        	}
+//            features.append(zoo[pos].features);
+//    		logger.info("***export features===" + zoo[pos].features);
+//            counter += batchSize_;
+//        	logger.info("***temModel----a");
+//        	if (counter >= 10000) {
+//        		logger.info("***export features");
+//        		FileHelper.outputToFile(fileName, features, true);
+//        		features.setLength(0);
+//        		counter = 0;
+//        	}
+//        	logger.info("***temModel----b");
+//        	if (features.length() > 0) {
+//        		logger.info("***temModel----c");
+//        	}
             
         }// end of while
 
