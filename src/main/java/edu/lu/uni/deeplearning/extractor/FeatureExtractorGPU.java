@@ -197,8 +197,8 @@ public class FeatureExtractorGPU {
         StringBuilder features = new StringBuilder();
         
         log.info("Train model....");
-//        model.setListeners(new ScoreIterationListener(1));
-        wrapper.setListeners(new ScoreIterationListener(1));
+        model.setListeners(new ScoreIterationListener(1));
+//        wrapper.setListeners(new ScoreIterationListener(1));
         
         String fileName = inputFile.getPath().replace(inputPath, outputPath);
         for( int i=0; i<nEpochs; i++ ) {

@@ -384,21 +384,21 @@ public class ParallelWrapper implements AutoCloseable {
             if (zoo == null)
                 throw new IllegalStateException(
                                 "ParallelWrapper.shutdown() has been called too early and will fail from this point forward.");
-//            zoo[pos].feedDataSet(dataSet);
-//            features.append(zoo[pos].features);
-//    		logger.info("***export features===" + zoo[pos].features);
-//            counter += batchSize_;
-//        	logger.info("***temModel----a");
-//        	if (counter >= 10000) {
-//        		logger.info("***export features");
-//        		FileHelper.outputToFile(fileName, features, true);
-//        		features.setLength(0);
-//        		counter = 0;
-//        	}
-//        	logger.info("***temModel----b");
-//        	if (features.length() > 0) {
-//        		logger.info("***temModel----c");
-//        	}
+            zoo[pos].feedDataSet(dataSet);
+            features.append(zoo[pos].features);
+    		logger.info("***export features===" + zoo[pos].features);
+            counter += batchSize_;
+        	logger.info("***temModel----a");
+        	if (counter >= 10000) {
+        		logger.info("***export features");
+        		FileHelper.outputToFile(fileName, features, true);
+        		features.setLength(0);
+        		counter = 0;
+        	}
+        	logger.info("***temModel----b");
+        	if (features.length() > 0) {
+        		logger.info("***temModel----c");
+        	}
 
             /*
                 if all workers are dispatched now, join till all are finished
@@ -684,7 +684,7 @@ public class ParallelWrapper implements AutoCloseable {
         private boolean onRootModel = false;
 
         private int nEpochs_i;
-//        protected StringBuilder features = new StringBuilder();
+        protected StringBuilder features = new StringBuilder();
         
         public Trainer(int threadId, Model model, int rootDevice, boolean useMDS, int nEpochs_i) {
             this(threadId, model, rootDevice, nEpochs_i);
@@ -850,10 +850,10 @@ if (nEpochs_i == nEpochs - 1) {
 	logger.info("***temModel6==");
 //	exportExtractedFeatures(temModel);
 	INDArray input = temModel.getOutputLayer().input();
-	StringBuilder features = new StringBuilder();
+//	StringBuilder features = new StringBuilder();
 	features.append(input.toString().replace("[[", "").replaceAll("\\],", "")
 			.replaceAll(" \\[", "").replace("]]", "") + "\n");
-	exportExtractedFeatures(features);
+//	exportExtractedFeatures(features);
 }
       
                         }
