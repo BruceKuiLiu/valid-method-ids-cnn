@@ -135,7 +135,7 @@ public class App {
 			FeatureExtractor2 extractor = new FeatureExtractor2(inputFile, sizeOfTokensVector, sizeOfEmbeddedVector, batchSize, sizeOfFeatureVector);
 			extractor.setOutputPath(outputPath);
 			// TODO tune the parameters below.
-//			extractor.setNumberOfEpochs(1);
+			extractor.setNumberOfEpochs(10);
 //			extractor.setSeed(123);
 //			extractor.setNumOfOutOfLayer1(20);
 //			extractor.setNumOfOutOfLayer2(50);
@@ -143,6 +143,7 @@ public class App {
 			extractor.extracteFeaturesWithCNN();
 		}
 	}
+	
 	public void extractFeaturesOnGPU() throws FileNotFoundException, IOException, InterruptedException {
 		String fileExtension = Configuration.DIGITAL_DATA_FILE_EXTENSION;
 		List<File> inputFiles = FileHelper.getAllFiles(Configuration.EMBEDDED_DATA_FILE_PATH, fileExtension);

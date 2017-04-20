@@ -164,15 +164,17 @@ public class FeatureExtractor2 {
         model.setListeners(new ScoreIterationListener(1));
         
         String fileName = inputFile.getPath().replace(inputPath, outputPath);
-        int batchers = 0;
         for( int i=0; i<nEpochs; i++ ) {
-        	while (trainingDataIter.hasNext()) {
-        		DataSet next = trainingDataIter.next();
-        		// During the process of fitting, each training instance is used to calibrate the parameters of neural network.
-                model.fit(next);
-                
-                if (i == nEpochs - 1) {
-                	INDArray input = model.getOutputLayer().input();
+        	if (i == nEpochs - 1) {
+        		trainingDataIter.reset();
+        		int batchers = 0;
+        		
+            	while (trainingDataIter.hasNext()) {
+	        		DataSet next = trainingDataIter.next();
+	        		// During the process of fitting, each training instance is used to calibrate the parameters of neural network.
+	                model.fit(next);
+	                
+	                INDArray input = model.getOutputLayer().input();
                 	features.append(input.toString().replace("[[", "").replaceAll("\\],", "")
                 			.replaceAll(" \\[", "").replace("]]", "") + "\n");
                 	
@@ -181,7 +183,9 @@ public class FeatureExtractor2 {
                 		FileHelper.outputToFile(fileName, features, true);
                 		features.setLength(0);
                 	}
-                }
+	        	}
+        	} else {
+        		model.fit(trainingDataIter);
         	}
             log.info("*** Completed epoch {} ***", i);
         }
