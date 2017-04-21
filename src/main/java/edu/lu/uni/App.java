@@ -12,7 +12,7 @@ import edu.lu.uni.data.preparing.Standardization;
 import edu.lu.uni.data.preparing.ZeroAppender;
 import edu.lu.uni.deeplearning.extractor.FeatureExtractor;
 import edu.lu.uni.deeplearning.extractor.FeatureExtractor2;
-import edu.lu.uni.deeplearning.extractor.FeatureExtractorGPU;
+import edu.lu.uni.feature.exporter.FeatureExporter;
 import edu.lu.uni.util.FileHelper;
 
 public class App {
@@ -29,8 +29,10 @@ public class App {
 			// feature extracting: deep learning with the CNN algorithm
 //			example.extractFeatureWithCNN();
 			example.extractFeatures2();
-//			example.extractFeaturesOnGPU();
+			example.exportFeaturesByProjects();
 			logger.info("****************Finish off extracting features by CNN****************\n");
+			
+			example.exportFeaturesByProjects();
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (InterruptedException e) {
@@ -144,31 +146,18 @@ public class App {
 		}
 	}
 	
-	public void extractFeaturesOnGPU() throws FileNotFoundException, IOException, InterruptedException {
+	public void exportFeaturesByProjects() {
 		String fileExtension = Configuration.DIGITAL_DATA_FILE_EXTENSION;
-		List<File> inputFiles = FileHelper.getAllFiles(Configuration.EMBEDDED_DATA_FILE_PATH, fileExtension);
+		List<File> inputFiles = FileHelper.getAllFiles(Configuration.DATA_EXTRACTED_FEATURE, fileExtension);
+		List<File> methodInfoFiles = FileHelper.getAllFilesInCurrentDiectory(Configuration.ENCODED_METHOD_BODY_FILE_PATH, Configuration.STRING_DATA_FILE_EXTENSION);
 		
-		String outputPath = Configuration.DATA_EXTRACTED_FEATURE + "embedded_data/";
+		String outputPath = Configuration.DATA_EXTRACTED_FEATURE_BY_PROJECTS;
 		// Clear existing output data generated at the last time.
 		FileHelper.deleteDirectory(outputPath);
 		
 		for (File inputFile : inputFiles) {
-			String fileName = inputFile.getName();
-			int sizeOfEmbeddedVector = Configuration.SIZE_OF_EMBEDDED_VECTOR;
-			int sizeOfTokensVector = Integer.parseInt(fileName.substring(fileName.lastIndexOf("=") + 1, fileName.lastIndexOf(fileExtension)));
-			int batchSize = Configuration.BATCH_SIZE;
-			int sizeOfFeatureVector = Configuration.SIZE_OF_FEATURE_VECTOR;  // size of vectors of extracted features.
-			
-			FeatureExtractorGPU extractor = new FeatureExtractorGPU(inputFile, sizeOfTokensVector, sizeOfEmbeddedVector, batchSize, sizeOfFeatureVector);
-			extractor.setOutputPath(outputPath);
-			// TODO tune the parameters below.
-//			extractor.setNumberOfEpochs(1);
-//			extractor.setSeed(123);
-//			extractor.setNumOfOutOfLayer1(20);
-//			extractor.setNumOfOutOfLayer2(50);
-			
-			extractor.extracteFeaturesWithCNN();
+			FeatureExporter exporter = new FeatureExporter(inputFile, methodInfoFiles, outputPath, Configuration.STRING_DATA_FILE_EXTENSION);
+			exporter.exportFeatureByProjects();
 		}
 	}
-
 }
