@@ -137,7 +137,7 @@ public class App {
 			FeatureExtractor2 extractor = new FeatureExtractor2(inputFile, sizeOfTokensVector, sizeOfEmbeddedVector, batchSize, sizeOfFeatureVector);
 			extractor.setOutputPath(outputPath);
 			// TODO tune the parameters below.
-			extractor.setNumberOfEpochs(10);
+			extractor.setNumberOfEpochs(5);
 //			extractor.setSeed(123);
 //			extractor.setNumOfOutOfLayer1(20);
 //			extractor.setNumOfOutOfLayer2(50);
