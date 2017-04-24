@@ -158,16 +158,14 @@ public class FeatureExtractor2 {
         MultiLayerNetwork model = new MultiLayerNetwork(conf);
         model.init();
 
-        StringBuilder features = new StringBuilder();
-        
         log.info("Train model....");
         model.setListeners(new ScoreIterationListener(1));
         
         String fileName = inputFile.getPath().replace(inputPath, outputPath);
+        StringBuilder features = new StringBuilder();
         for( int i=0; i<nEpochs; i++ ) {
         	if (i == nEpochs - 1) {
-        		trainingDataIter.reset();
-        		int batchers = 0;
+//        		int batchers = 0;
         		
             	while (trainingDataIter.hasNext()) {
 	        		DataSet next = trainingDataIter.next();
@@ -178,15 +176,20 @@ public class FeatureExtractor2 {
                 	features.append(input.toString().replace("[[", "").replaceAll("\\],", "")
                 			.replaceAll(" \\[", "").replace("]]", "") + "\n");
                 	
-                	batchers ++;
-                	if ((batchers * batchSize) >= 100000) {
-                		FileHelper.outputToFile(fileName, features, true);
-                		features.setLength(0);
-                	}
+//                	batchers ++;
+//                	if ((batchers * batchSize) >= 100000) {
+//                		FileHelper.outputToFile(fileName, features, true);
+//                		features.setLength(0);
+//                	}
 	        	}
         	} else {
-        		model.fit(trainingDataIter);
+        		while (trainingDataIter.hasNext()) {
+	        		DataSet next = trainingDataIter.next();
+	                model.fit(next);
+	        	}
         	}
+
+    		trainingDataIter.reset();
             log.info("*** Completed epoch {} ***", i);
         }
         log.info("****************Extracting features finished****************");
