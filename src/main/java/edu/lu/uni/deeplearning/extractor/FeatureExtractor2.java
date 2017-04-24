@@ -161,40 +161,35 @@ public class FeatureExtractor2 {
         log.info("Train model....");
         model.setListeners(new ScoreIterationListener(1));
         
-        String fileName = inputFile.getPath().replace(inputPath, outputPath);
+        String fileName = inputFile.getName(); //inputFile.getPath().replace(inputPath, outputPath);
         StringBuilder features = new StringBuilder();
         for( int i=0; i<nEpochs; i++ ) {
-        	if (i == nEpochs - 1) {
-//        		int batchers = 0;
-        		
-            	while (trainingDataIter.hasNext()) {
-	        		DataSet next = trainingDataIter.next();
-	        		// During the process of fitting, each training instance is used to calibrate the parameters of neural network.
-	                model.fit(next);
-	                
-	                INDArray input = model.getOutputLayer().input();
-                	features.append(input.toString().replace("[[", "").replaceAll("\\],", "")
-                			.replaceAll(" \\[", "").replace("]]", "") + "\n");
-                	
-//                	batchers ++;
-//                	if ((batchers * batchSize) >= 100000) {
-//                		FileHelper.outputToFile(fileName, features, true);
-//                		features.setLength(0);
-//                	}
-	        	}
-        	} else {
-        		while (trainingDataIter.hasNext()) {
-	        		DataSet next = trainingDataIter.next();
-	                model.fit(next);
-	        	}
+        	fileName = outputPath + (i + 1) + "_" + fileName;
+        	int batchers = 0;
+        	while (trainingDataIter.hasNext()) {
+        		DataSet next = trainingDataIter.next();
+        		// During the process of fitting, each training instance is used to calibrate the parameters of neural network.
+                model.fit(next);
+                
+                INDArray input = model.getOutputLayer().input();
+            	features.append(input.toString().replace("[[", "").replaceAll("\\],", "")
+            			.replaceAll(" \\[", "").replace("]]", "") + "\n");
+            	
+            	batchers ++;
+            	if ((batchers * batchSize) >= 100000) {
+            		FileHelper.outputToFile(fileName, features, true);
+            		features.setLength(0);
+            	}
+            	log.info("batch: " + batchers);
         	}
-
+        	FileHelper.outputToFile(fileName, features, true);
+        	features.setLength(0);
+        	log.info("*** Completed epoch {} ***", i);
+        	
     		trainingDataIter.reset();
-            log.info("*** Completed epoch {} ***", i);
         }
         log.info("****************Extracting features finished****************");
-        model.clear();
-    	FileHelper.outputToFile(fileName, features, true);
+//      model.clear();
 	}
 
 	public void addMethodNameToFeatures(String file, String filePath) throws IOException {
