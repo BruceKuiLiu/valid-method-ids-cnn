@@ -164,7 +164,7 @@ public class FeatureExtractor2 {
         String fileName = inputFile.getName(); //inputFile.getPath().replace(inputPath, outputPath);
         StringBuilder features = new StringBuilder();
         for( int i=0; i<nEpochs; i++ ) {
-        	fileName = outputPath + (i + 1) + "_" + fileName;
+        	String outputFileName = outputPath + (i + 1) + "_" + fileName;
         	int batchers = 0;
         	while (trainingDataIter.hasNext()) {
         		DataSet next = trainingDataIter.next();
@@ -177,12 +177,12 @@ public class FeatureExtractor2 {
             	
             	batchers ++;
             	if ((batchers * batchSize) >= 100000) {
-            		FileHelper.outputToFile(fileName, features, true);
+            		FileHelper.outputToFile(outputFileName, features, true);
             		features.setLength(0);
             	}
             	log.info("batch: " + batchers);
         	}
-        	FileHelper.outputToFile(fileName, features, true);
+        	FileHelper.outputToFile(outputFileName, features, true);
         	features.setLength(0);
         	log.info("*** Completed epoch {} ***", i);
         	
