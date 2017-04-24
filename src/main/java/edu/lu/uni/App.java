@@ -31,8 +31,6 @@ public class App {
 			example.extractFeatures2();
 			example.exportFeaturesByProjects();
 			logger.info("****************Finish off extracting features by CNN****************\n");
-			
-			example.exportFeaturesByProjects();
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (InterruptedException e) {
@@ -137,7 +135,7 @@ public class App {
 			FeatureExtractor2 extractor = new FeatureExtractor2(inputFile, sizeOfTokensVector, sizeOfEmbeddedVector, batchSize, sizeOfFeatureVector);
 			extractor.setOutputPath(outputPath);
 			// TODO tune the parameters below.
-			extractor.setNumberOfEpochs(10);
+			extractor.setNumberOfEpochs(Configuration.NEPOCHS);
 //			extractor.setSeed(123);
 //			extractor.setNumOfOutOfLayer1(20);
 //			extractor.setNumOfOutOfLayer2(50);
@@ -158,6 +156,8 @@ public class App {
 		for (File inputFile : inputFiles) {
 			FeatureExporter exporter = new FeatureExporter(inputFile, methodInfoFiles, outputPath, Configuration.STRING_DATA_FILE_EXTENSION);
 			exporter.exportFeatureByProjects();
+			System.out.println(inputFile.getName());
+			
 		}
 	}
 }

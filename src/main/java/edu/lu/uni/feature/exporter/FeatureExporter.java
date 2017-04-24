@@ -32,7 +32,9 @@ public class FeatureExporter {
 		fileName = fileName.substring(0, fileName.indexOf("."));
 		
 		for (File methodInfoFile : methodInfoFiles) {
-			if (methodInfoFile.getName().startsWith(fileName)) {
+			String name = methodInfoFile.getName();
+			name = name.substring(0, name.indexOf("."));
+			if (fileName.endsWith(name)) {
 				return methodInfoFile;
 			}
 		}
@@ -73,6 +75,8 @@ public class FeatureExporter {
 					features.setLength(0);
 					previousProject = currentProject;
 				}
+				
+				index ++;
 			}
 			
 			FileHelper.outputToFile(outputPath + previousProject + fileExtension, features, false);

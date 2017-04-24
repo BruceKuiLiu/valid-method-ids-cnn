@@ -56,7 +56,8 @@ public class Configuration {
 	public static final int SIZE_OF_FEATURE_VECTOR = 300; // size of extracted feature vectors
 	public static final String DATA_APPZENDED_ZERO = "../OUTPUT/data_for_CNN/append_zero/";        // file path of output
 	public static final String DATA_STANDARDIZED = "../OUTPUT/data_for_CNN/standardized_data/";    // file path of output
-	public static final String DATA_EXTRACTED_FEATURE = "OUTPUT/CNN_extracted_feature_1/";        // file path of output
-	public static final String DATA_EXTRACTED_FEATURE_BY_PROJECTS = "OUTPUT/extracted_features_by_project_1/";
+	public static final String DATA_EXTRACTED_FEATURE = "../OUTPUT/CNN_extracted_feature/";        // file path of output
+	public static final String DATA_EXTRACTED_FEATURE_BY_PROJECTS = "../OUTPUT/extracted_features_by_project/";
+	public static final int NEPOCHS = 10;
 	
 }
