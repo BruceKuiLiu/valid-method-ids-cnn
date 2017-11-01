@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
-import edu.lu.uni.util.FileHelper;
+import edu.lu.uni.serval.utils.FileHelper;
 
 public class FeatureExporter {
 	
@@ -18,10 +18,10 @@ public class FeatureExporter {
 	private String fileExtension;
 	private List<String> methodsInfo;
 	
-	public FeatureExporter(File featureFile, List<File> methodInfoFiles, String outputPath, String fileExtension) {
+	public FeatureExporter(File featureFile, String methodInfoFiles, String outputPath, String fileExtension) {
 		super();
 		this.featureFile = featureFile;
-		this.methodInfoFile = matchMethodInfoFile(featureFile, methodInfoFiles);
+		this.methodInfoFile = new File(methodInfoFiles);//matchMethodInfoFile(featureFile, methodInfoFiles);
 		this.outputPath = outputPath;
 		this.fileExtension = fileExtension;
 		methodsInfo = new ArrayList<>();

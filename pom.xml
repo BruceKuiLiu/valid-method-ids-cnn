@@ -13,6 +13,12 @@
 	</properties>
 
 	<dependencies>
+		<dependency>
+			<groupId>edu.lu.uni</groupId>
+			<artifactId>simple-utils</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+	
 		<!-- Dependency for parallel wrapper (for multi-GPU parameter averaging -->
 		<!-- <dependency>
 			<groupId>org.deeplearning4j</groupId>

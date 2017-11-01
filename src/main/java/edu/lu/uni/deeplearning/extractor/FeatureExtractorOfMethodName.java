@@ -31,7 +31,7 @@ import org.nd4j.linalg.lossfunctions.LossFunctions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.lu.uni.util.FileHelper;
+import edu.lu.uni.serval.utils.FileHelper;
 
 @Deprecated
 public class FeatureExtractorOfMethodName {

@@ -13,7 +13,7 @@ import edu.lu.uni.data.preparing.ZeroAppender;
 import edu.lu.uni.deeplearning.extractor.FeatureExtractor;
 import edu.lu.uni.deeplearning.extractor.FeatureExtractor2;
 import edu.lu.uni.feature.exporter.FeatureExporter;
-import edu.lu.uni.util.FileHelper;
+import edu.lu.uni.serval.utils.FileHelper;
 
 public class App {
 
@@ -43,6 +43,7 @@ public class App {
 	 * to make all the lengths of vectors consistent and equal to the max size.
 	 * @throws IOException
 	 */
+	@Deprecated
 	public void appendZero() throws IOException {
 		String inputFilePath = Configuration.ENCODED_METHOD_BODY_FILE_PATH;
 		String inputFileExtension = Configuration.STRING_DATA_FILE_EXTENSION;
@@ -62,6 +63,7 @@ public class App {
 	/**
 	 * Standardize the data of integer vectors.
 	 */
+	@Deprecated
 	public void standardizeData() {
 		String inputFilePath = Configuration.ENCODED_METHOD_BODY_FILE_PATH;
 		String fileExtension = Configuration.STRING_DATA_FILE_EXTENSION;
@@ -83,6 +85,7 @@ public class App {
 	 * @throws IOException
 	 * @throws InterruptedException
 	 */
+	@Deprecated
 	public void extractFeatureWithCNN() throws IOException, InterruptedException {
 		String fileExtension = Configuration.DIGITAL_DATA_FILE_EXTENSION;
 		List<File> inputFiles = FileHelper.getAllFiles(Configuration.DATA_APPZENDED_ZERO, fileExtension); // normal data.
@@ -119,36 +122,33 @@ public class App {
 	 */
 	public void extractFeatures2() throws FileNotFoundException, IOException, InterruptedException {
 		String fileExtension = Configuration.DIGITAL_DATA_FILE_EXTENSION;
-		List<File> inputFiles = FileHelper.getAllFiles(Configuration.EMBEDDED_DATA_FILE_PATH, fileExtension);
+//		List<File> inputFiles = FileHelper.getAllFiles(Configuration.EMBEDDED_DATA_FILE_PATH, fileExtension);
 		
-		String outputPath = Configuration.DATA_EXTRACTED_FEATURE + "embedded_data/";
+		String outputPath = Configuration.DATA_EXTRACTED_FEATURE;
 		// Clear existing output data generated at the last time.
 		FileHelper.deleteDirectory(outputPath);
+		File inputFile = new File(Configuration.EMBEDDED_DATA_FILE_PATH);
+		String fileName = inputFile .getName();
+		int sizeOfEmbeddedVector = Configuration.SIZE_OF_EMBEDDED_VECTOR;
+		int sizeOfTokensVector = Integer.parseInt(fileName.substring(fileName.lastIndexOf("=") + 1, fileName.lastIndexOf(fileExtension)));
+		int batchSize = Configuration.BATCH_SIZE;
+		int sizeOfFeatureVector = Configuration.SIZE_OF_FEATURE_VECTOR;  // size of vectors of extracted features.
 		
-		for (File inputFile : inputFiles) {
-			String fileName = inputFile.getName();
-			int sizeOfEmbeddedVector = Configuration.SIZE_OF_EMBEDDED_VECTOR;
-			int sizeOfTokensVector = Integer.parseInt(fileName.substring(fileName.lastIndexOf("=") + 1, fileName.lastIndexOf(fileExtension)));
-			int batchSize = Configuration.BATCH_SIZE;
-			int sizeOfFeatureVector = Configuration.SIZE_OF_FEATURE_VECTOR;  // size of vectors of extracted features.
-			
-			FeatureExtractor2 extractor = new FeatureExtractor2(inputFile, sizeOfTokensVector, sizeOfEmbeddedVector, batchSize, sizeOfFeatureVector);
-			extractor.setOutputPath(outputPath);
-			// TODO tune the parameters below.
-			extractor.setNumberOfEpochs(Configuration.NEPOCHS);
-//			extractor.setSeed(123);
-//			extractor.setNumOfOutOfLayer1(20);
-//			extractor.setNumOfOutOfLayer2(50);
-			
-			extractor.extracteFeaturesWithCNN();
-		}
+		FeatureExtractor2 extractor = new FeatureExtractor2(inputFile, sizeOfTokensVector, sizeOfEmbeddedVector, batchSize, sizeOfFeatureVector);
+		// TODO tune the parameters below.
+		extractor.setNumberOfEpochs(Configuration.N_EPOCHS);
+		extractor.setSeed(123);
+		extractor.setNumOfOutOfLayer1(20);
+		extractor.setNumOfOutOfLayer2(50);
+		extractor.setOutputPath(outputPath);
+		
+		extractor.extracteFeaturesWithCNN();
 	}
 	
 	public void exportFeaturesByProjects() {
 		String fileExtension = Configuration.DIGITAL_DATA_FILE_EXTENSION;
 		List<File> inputFiles = FileHelper.getAllFiles(Configuration.DATA_EXTRACTED_FEATURE, fileExtension);
-		List<File> methodInfoFiles = FileHelper.getAllFilesInCurrentDiectory(Configuration.ENCODED_METHOD_BODY_FILE_PATH, Configuration.STRING_DATA_FILE_EXTENSION);
-		
+		String methodInfoFiles = Configuration.ENCODED_METHOD_BODY_FILE_PATH;
 		String outputPath = Configuration.DATA_EXTRACTED_FEATURE_BY_PROJECTS;
 		// Clear existing output data generated at the last time.
 		FileHelper.deleteDirectory(outputPath);
@@ -157,7 +157,6 @@ public class App {
 			FeatureExporter exporter = new FeatureExporter(inputFile, methodInfoFiles, outputPath, Configuration.STRING_DATA_FILE_EXTENSION);
 			exporter.exportFeatureByProjects();
 			System.out.println(inputFile.getName());
-			
 		}
 	}
 }

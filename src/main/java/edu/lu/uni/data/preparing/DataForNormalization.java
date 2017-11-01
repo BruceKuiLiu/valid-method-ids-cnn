@@ -9,7 +9,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 
-import edu.lu.uni.util.FileHelper;
+import edu.lu.uni.serval.utils.FileHelper;
 
 /**
  * Normalize data.

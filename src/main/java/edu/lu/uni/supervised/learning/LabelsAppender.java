@@ -12,7 +12,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Scanner;
 
-import edu.lu.uni.util.FileHelper;
+import edu.lu.uni.serval.utils.FileHelper;
 
 public class LabelsAppender {
 	

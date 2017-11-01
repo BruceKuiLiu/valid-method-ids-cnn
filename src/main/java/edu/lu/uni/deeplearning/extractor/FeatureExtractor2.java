@@ -23,6 +23,7 @@ import org.deeplearning4j.nn.conf.layers.SubsamplingLayer;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.weights.WeightInit;
 import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
+import org.deeplearning4j.util.ModelSerializer;
 import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
@@ -31,7 +32,7 @@ import org.nd4j.linalg.lossfunctions.LossFunctions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.lu.uni.util.FileHelper;
+import edu.lu.uni.serval.utils.FileHelper;
 
 /**
  * Extract features of method body by deep learning with the CNN algorithm.
@@ -161,7 +162,7 @@ public class FeatureExtractor2 {
         log.info("Train model....");
         model.setListeners(new ScoreIterationListener(1));
         
-        String fileName = inputFile.getName(); //inputFile.getPath().replace(inputPath, outputPath);
+        String fileName = "CNN_Ouput.csv";//inputFile.getName(); //inputFile.getPath().replace(inputPath, outputPath);
         StringBuilder features = new StringBuilder();
         for( int i=0; i<nEpochs; i++ ) {
         	String outputFileName = outputPath + (i + 1) + "_" + fileName;
@@ -188,6 +189,12 @@ public class FeatureExtractor2 {
         	
     		trainingDataIter.reset();
         }
+        
+        //Save the model
+        String modelFile = outputPath + fileName.substring(0, fileName.lastIndexOf(".")) + ".zip";
+        File locationToSave = new File(modelFile);  //Where to save the network. Note: the file is in .zip format - can be opened externally
+        boolean saveUpdater = true;    //Updater: i.e., the state for Momentum, RMSProp, Adagrad etc. Save this if you want to train your network more in the future
+        ModelSerializer.writeModel(model, locationToSave, saveUpdater);
         log.info("****************Extracting features finished****************");
 //      model.clear();
 	}
