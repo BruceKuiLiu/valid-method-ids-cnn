@@ -18,16 +18,17 @@ public class App2 {
 	
 	public static void main(String[] args) {
 		App2 example = new App2();
-		try {
-			logger.info("****************Start to extract features by CNN****************\n");
-			example.extractFeatures2();
-			example.exportFeaturesByProjects();
-			logger.info("****************Finish off extracting features by CNN****************\n");
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
+//		try {
+//			logger.info("****************Start to extract features by CNN****************\n");
+//			example.extractFeatures2();
+//			example.exportFeaturesByProjects();
+//			logger.info("****************Finish off extracting features by CNN****************\n");
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//		} catch (InterruptedException e) {
+//			e.printStackTrace();
+//		}
+		example.exportFeaturesByProjects();
 	}
 
 	/**
@@ -75,7 +76,7 @@ public class App2 {
 	public void exportFeaturesByProjects() {
 		String fileExtension = Configuration.DIGITAL_DATA_FILE_EXTENSION;
 		List<File> inputFiles = FileHelper.getAllFiles("../OUTPUT/commons/CNN_extracted_feature/", fileExtension);
-		String methodInfoFiles = "../OUTPUT/commons/selected_tokens.list";
+		String methodInfoFiles = "../OUTPUT/commons/selected_method_tokens.list";
 		String outputPath = "../OUTPUT/commons/extracted_features_by_project/";
 		// Clear existing output data generated at the last time.
 		FileHelper.deleteDirectory(outputPath);
