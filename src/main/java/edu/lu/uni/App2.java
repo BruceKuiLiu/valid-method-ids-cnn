@@ -125,7 +125,7 @@ public class App2 {
 		File inputFile = new File("../OUTPUT/commons/vectorized_tokens.list");
 		String fileName = inputFile .getName();
 		int sizeOfEmbeddedVector = Configuration.SIZE_OF_EMBEDDED_VECTOR;
-		int sizeOfTokensVector = 84;//Integer.parseInt(fileName.substring(fileName.lastIndexOf("=") + 1, fileName.lastIndexOf(fileExtension)));
+		int sizeOfTokensVector = 122;//Integer.parseInt(fileName.substring(fileName.lastIndexOf("=") + 1, fileName.lastIndexOf(fileExtension)));
 		int batchSize = 64;//Configuration.BATCH_SIZE;
 		int sizeOfFeatureVector = Configuration.SIZE_OF_FEATURE_VECTOR;  // size of vectors of extracted features.
 		
