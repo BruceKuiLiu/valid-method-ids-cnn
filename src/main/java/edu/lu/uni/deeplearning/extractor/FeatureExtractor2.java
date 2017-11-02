@@ -45,7 +45,7 @@ public class FeatureExtractor2 {
 	
 	private File inputFile;
     int sizeOfVector = 0;    // The vector size of each instance.
-    int sizeOfCodeVec = 0;   // The vector size of each instance.
+    int sizeOfCodeVec = 0;   // The vector size of each embedded token.
 	private int batchSize;
 	private int sizeOfFeatureVector; // The size of feature vector, which is the extracted features of each instance.
 	
