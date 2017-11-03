@@ -27,6 +27,7 @@ public class FeatureExporter {
 		methodsInfo = new ArrayList<>();
 	}
 
+	@SuppressWarnings("unused")
 	private File matchMethodInfoFile(File featureFile, List<File> methodInfoFiles) {
 		String fileName = featureFile.getName();
 		fileName = fileName.substring(0, fileName.indexOf("."));
@@ -61,21 +62,18 @@ public class FeatureExporter {
 			String currentProject = "";
 			
 			while (scanner.hasNextLine()) {
-				String feature = scanner.nextLine();
 				String methodInfo = methodsInfo.get(index);
-				features.append(methodInfo + feature + "\n");
-				
 				currentProject = methodInfo.substring(0, methodInfo.indexOf(":"));
 				if (index == 0) {
 					previousProject = currentProject;
-				}
-				
-				if (!currentProject.equals(previousProject)) {
+				} else if (!currentProject.equals(previousProject)) {
 					FileHelper.outputToFile(outputPath + previousProject + fileExtension, features, false);
 					features.setLength(0);
 					previousProject = currentProject;
 				}
-				
+
+				String feature = scanner.nextLine();
+				features.append(methodInfo + feature + "\n");
 				index ++;
 			}
 			

@@ -18,17 +18,16 @@ public class App2 {
 	
 	public static void main(String[] args) {
 		App2 example = new App2();
-//		try {
-//			logger.info("****************Start to extract features by CNN****************\n");
-//			example.extractFeatures2();
-//			example.exportFeaturesByProjects();
-//			logger.info("****************Finish off extracting features by CNN****************\n");
-//		} catch (IOException e) {
-//			e.printStackTrace();
-//		} catch (InterruptedException e) {
-//			e.printStackTrace();
-//		}
-		example.exportFeaturesByProjects();
+		try {
+			logger.info("****************Start to extract features by CNN****************\n");
+			example.extractFeatures2();
+			example.exportFeaturesByProjects();
+			logger.info("****************Finish off extracting features by CNN****************\n");
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 	}
 
 	/**
@@ -63,7 +62,6 @@ public class App2 {
 		FileHelper.deleteDirectory(outputPath);
 		
 		FeatureExtractor2 extractor = new FeatureExtractor2(inputFile, sizeOfTokensVector, sizeOfEmbeddedVector, batchSize, sizeOfFeatureVector);
-		// TODO tune the parameters below.
 		extractor.setNumberOfEpochs(Configuration.N_EPOCHS);
 		extractor.setSeed(123);
 		extractor.setNumOfOutOfLayer1(20);

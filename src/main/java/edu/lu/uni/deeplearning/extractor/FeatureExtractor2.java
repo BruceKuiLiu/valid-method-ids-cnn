@@ -162,7 +162,7 @@ public class FeatureExtractor2 {
         log.info("Train model....");
         model.setListeners(new ScoreIterationListener(1));
         
-        String fileName = "CNN_Ouput.csv";//inputFile.getName(); //inputFile.getPath().replace(inputPath, outputPath);
+        String fileName = "CNN_Output.csv";//inputFile.getName(); //inputFile.getPath().replace(inputPath, outputPath);
         StringBuilder features = new StringBuilder();
         for( int i=0; i<nEpochs; i++ ) {
         	String outputFileName = outputPath + (i + 1) + "_" + fileName;
