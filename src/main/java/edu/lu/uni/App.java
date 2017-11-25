@@ -29,7 +29,7 @@ public class App {
 			// feature extracting: deep learning with the CNN algorithm
 //			example.extractFeatureWithCNN();
 			example.extractFeatures2();
-			example.exportFeaturesByProjects();
+//			example.exportFeaturesByProjects();
 			logger.info("****************Finish off extracting features by CNN****************\n");
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -127,22 +127,25 @@ public class App {
 		String outputPath = Configuration.DATA_EXTRACTED_FEATURE;
 		// Clear existing output data generated at the last time.
 		FileHelper.deleteDirectory(outputPath);
-		File inputFile = new File(Configuration.EMBEDDED_DATA_FILE_PATH);
-		String fileName = inputFile .getName();
+		File inputFile = new File("../OUTPUT/data_for_CNN/");
+		File[] cnnInputFiles = inputFile.listFiles();
 		int sizeOfEmbeddedVector = Configuration.SIZE_OF_EMBEDDED_VECTOR;
-		int sizeOfTokensVector = Integer.parseInt(fileName.substring(fileName.lastIndexOf("=") + 1, fileName.lastIndexOf(fileExtension)));
-		int batchSize = Configuration.BATCH_SIZE;
-		int sizeOfFeatureVector = Configuration.SIZE_OF_FEATURE_VECTOR;  // size of vectors of extracted features.
-		
-		FeatureExtractor2 extractor = new FeatureExtractor2(inputFile, sizeOfTokensVector, sizeOfEmbeddedVector, batchSize, sizeOfFeatureVector);
-		// TODO tune the parameters below.
-		extractor.setNumberOfEpochs(Configuration.N_EPOCHS);
-		extractor.setSeed(123);
-		extractor.setNumOfOutOfLayer1(20);
-		extractor.setNumOfOutOfLayer2(50);
-		extractor.setOutputPath(outputPath);
-		
-		extractor.extracteFeaturesWithCNN();
+		for (File cnnInputFile : cnnInputFiles) {
+			String fileName = cnnInputFile.getName();
+			int sizeOfTokensVector = Integer.parseInt(fileName.substring(fileName.lastIndexOf("=") + 1, fileName.lastIndexOf(fileExtension)));
+			int batchSize = Configuration.BATCH_SIZE;
+			int sizeOfFeatureVector = Configuration.SIZE_OF_FEATURE_VECTOR;  // size of vectors of extracted features.
+			
+			FeatureExtractor2 extractor = new FeatureExtractor2(cnnInputFile, sizeOfTokensVector, sizeOfEmbeddedVector, batchSize, sizeOfFeatureVector);
+			// TODO tune the parameters below.
+			extractor.setNumberOfEpochs(Configuration.N_EPOCHS);
+			extractor.setSeed(123);
+			extractor.setNumOfOutOfLayer1(20);
+			extractor.setNumOfOutOfLayer2(50);
+			extractor.setOutputPath(outputPath);
+			
+			extractor.extracteFeaturesWithCNN();
+		}
 	}
 	
 	public void exportFeaturesByProjects() {
