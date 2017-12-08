@@ -129,7 +129,7 @@ public class FeatureExtractor2 {
                 .layer(0, new ConvolutionLayer.Builder(4, sizeOfCodeVec)
                         //nIn and nOut specify depth. nIn here is the nChannels and nOut is the number of filters to be applied
                         .nIn(nChannels)
-                        .stride(1, 1)
+                        .stride(1, sizeOfCodeVec)
                         .nOut(numOfOutOfLayer1)
                         .activation(Activation.IDENTITY)
                         .build())

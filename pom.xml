@@ -7,74 +7,16 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<!-- <nd4j.backend>nd4j-cuda-8.0-platform</nd4j.backend> -->
-		<dl4j.version>0.8.0</dl4j.version>
-		<nd4j.version>0.8.0</nd4j.version>
 	</properties>
 
 	<dependencies>
+			
 		<dependency>
-			<groupId>edu.lu.uni</groupId>
-			<artifactId>simple-utils</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<groupId>edu.lu.uni.serval</groupId>
+			<artifactId>MyFeatureLearner</artifactId>
+			<version>0.0.1-SNAPSHOT</version> <!-- simple-utils -->
 		</dependency>
-	
-		<!-- Dependency for parallel wrapper (for multi-GPU parameter averaging -->
-		<!-- <dependency>
-			<groupId>org.deeplearning4j</groupId>
-			<artifactId>deeplearning4j-parallel-wrapper_2.11</artifactId>
-			<version>${dl4j.version}</version>
-		</dependency> -->
-		<!-- deep learning for java -->
-		<dependency>
-			<groupId>org.deeplearning4j</groupId>
-			<artifactId>deeplearning4j-core</artifactId>
-			<version>${dl4j.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.deeplearning4j</groupId>
-			<artifactId>deeplearning4j-ui_2.10</artifactId>
-			<version>${dl4j.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.nd4j</groupId>
-			<artifactId>nd4j-native</artifactId>
-			<version>${nd4j.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.nd4j</groupId>
-			<artifactId>nd4j-api</artifactId>
-			<version>${nd4j.version}</version>
-		</dependency>
-		<!-- <dependency> 
-			<groupId>org.nd4j</groupId>
-			<artifactId>nd4j-cuda-8.0-platform</artifactId> 
-			<version>${nd4j.version}</version>
-		</dependency> -->
-
-		<!-- Logger -->
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-api</artifactId>
-			<version>1.7.21</version>
-		</dependency>
-		<dependency>
-			<groupId>ch.qos.logback</groupId>
-			<artifactId>logback-core</artifactId>
-			<version>1.1.7</version>
-		</dependency>
-		<dependency>
-			<groupId>ch.qos.logback</groupId>
-			<artifactId>logback-classic</artifactId>
-			<version>1.1.7</version>
-		</dependency>
-
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.12</version>
-			<scope>test</scope>
-		</dependency>
+		
 	</dependencies>
 
 	<build>
